@@ -51,6 +51,7 @@ import Storage from '../src/modules/Storage';
 import Subscription from '../src/modules/Subscription';
 import TabManager from '../src/modules/TabManager';
 import Webphone from '../src/modules/Webphone';
+import RecentMessages from '../src/modules/RecentMessages';
 
 import config from './config';
 
@@ -474,6 +475,10 @@ export default class Phone extends RcModule {
       getState: () => this.state.messages,
     }));
     reducers.messages = this.messages.reducer;
+    this.addModule('recentMessages', new RecentMessages({
+      contacts: this.contacts,
+      messages: this.messages
+    }))
     this._reducer = combineReducers({
       ...reducers,
       lastAction: (state = null, action) => {
