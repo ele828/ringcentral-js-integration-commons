@@ -227,29 +227,14 @@ export default class RecentMessages extends RcModule {
       perPage: length
     };
     const phoneNumbers = currentContact.phoneNumbers;
-    const recentMessagesPromise = phoneNumbers.reduce((acc, { phoneNumber, extensionNumber }) => {
+    const recentMessagesPromise = phoneNumbers.reduce((acc, { phoneNumber }) => {
+      // Cannot filter out by extensionNumber
       if (phoneNumber) {
         const promise = this._fetchMessageList(
           Object.assign(params, {
             phoneNumber
           })
         );
-        return acc.concat(promise);
-      }
-      if (extensionNumber) {
-        // Show messages of extensions
-        let promise = this._fetchMessageList(
-          Object.assign(params, {
-            messageType: 'Pager'
-          })
-        );
-        // Need to filter by extension numbers
-        promise = promise.then(messages => (
-          messages.filter(message => (
-            extensionNumber === message.from.extensionNumber ||
-            !!message.to.find(to => to.extensionNumber === extensionNumber)
-          ))
-        ));
         return acc.concat(promise);
       }
       return acc;
