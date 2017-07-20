@@ -3,7 +3,7 @@ import moduleActionTypes from '../../enums/moduleActionTypes';
 
 export default new Enum([
   ...Object.keys(moduleActionTypes),
-  'initMessageLoad',
-  'messagesLoaded',
-  'messagesReset'
+  'initLoad',
+  'loadSuccess',
+  'loadReset'
 ], 'recentMessages');

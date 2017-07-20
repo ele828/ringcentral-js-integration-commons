@@ -4,6 +4,7 @@ import {
   getMessageStatusReducer
 } from './getRecentMessagesReducer';
 import actionTypes from './actionTypes';
+import messageStatus from './messageStatus';
 
 describe('RecentMessages :: getMessagesReducer', () => {
   it('getCurrentPageReducer should be a function', () => {
@@ -28,7 +29,7 @@ describe('RecentMessages :: getMessagesReducer', () => {
     it('should return messages as passed in', () => {
       const messages = { id: 1 };
       expect(reducer([], {
-        type: actionTypes.messagesLoaded,
+        type: actionTypes.loadSuccess,
         messages
       })).to.equal(messages);
     });
@@ -56,20 +57,20 @@ describe('RecentMessages :: getMessageStatusReducer', () => {
       expect(reducer(undefined, {})).to.equal(null);
     });
     it('should return original state of actionTypes is not recognized', () => {
-      const originalState = actionTypes.initMessageLoad;
+      const originalState = actionTypes.initLoad;
       expect(reducer(originalState, { type: 'foo' }))
         .to.equal(originalState);
     });
     it('messageLoad status should be set', () => {
       expect(reducer(null, {
-        type: actionTypes.initMessageLoad,
-      })).to.equal(actionTypes.initMessageLoad);
+        type: actionTypes.initLoad,
+      })).to.equal(messageStatus.loading);
       expect(reducer(null, {
-        type: actionTypes.messagesLoaded,
-      })).to.equal(actionTypes.messagesLoaded);
+        type: actionTypes.reset,
+      })).to.equal(messageStatus.loaded);
       expect(reducer(null, {
-        type: actionTypes.messagesReset,
-      })).to.equal(actionTypes.messagesReset);
+        type: actionTypes.loadSuccess,
+      })).to.equal(messageStatus.loaded);
     });
   });
 });

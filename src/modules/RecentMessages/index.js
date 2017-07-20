@@ -1,6 +1,8 @@
 import proxify from '../../lib/proxy/proxify';
+import ensureExist from '../../lib/ensureExist';
 import RcModule from '../../lib/RcModule';
 import actionTypes from './actionTypes';
+import messageStatus from './messageStatus';
 import getRecentMessagesReducer from './getRecentMessagesReducer';
 import getDateFrom from '../../lib/getDateFrom';
 
@@ -18,8 +20,8 @@ export default class RecentMessages extends RcModule {
       actionTypes,
       ...options
     });
-    this._client = client;
-    this._messageStore = messageStore;
+    this._client = this::ensureExist(client, 'client');
+    this._messageStore = this::ensureExist(messageStore, 'messageStore');
     this._reducer = getRecentMessagesReducer(this.actionTypes);
 
     this.addSelector(
@@ -39,29 +41,23 @@ export default class RecentMessages extends RcModule {
   async _onStateChange() {
     if (
       this.pending &&
-      !!this._messageStore
-      && this._messageStore.ready
+      this._messageStore.ready
     ) {
       this.store.dispatch({
         type: this.actionTypes.initSuccess,
       });
     } else if (
       this.ready &&
-      !!this._messageStore &&
       !this._messageStore.ready
     ) {
       this.store.dispatch({
         type: this.actionTypes.resetSuccess
       });
-    }
-
-    // Listen to messageStore state changes
-    if (this.ready && !!this._messageStore && this._messageStore.ready) {
-      if (this._currentContact) {
-        if (this._messageStore.updatedTimestamp !== this._prevMessageStoreTimestamp) {
-          this._prevMessageStoreTimestamp = this._messageStore.updatedTimestamp;
-          this.getMessages(this._currentContact, true);
-        }
+    } else if (this._currentContact !== null) {
+      // Listen to messageStore state changes
+      if (this._messageStore.updatedTimestamp !== this._prevMessageStoreTimestamp) {
+        this._prevMessageStoreTimestamp = this._messageStore.updatedTimestamp;
+        this.getMessages(this._currentContact, true);
       }
     }
   }
@@ -75,7 +71,7 @@ export default class RecentMessages extends RcModule {
   }
 
   get isMessagesLoaded() {
-    return this.state.messageStatus === this.actionTypes.messagesLoaded;
+    return this.state.messageStatus === messageStatus.loaded;
   }
 
   @proxify
@@ -90,12 +86,11 @@ export default class RecentMessages extends RcModule {
     }
     this._currentContact = currentContact;
     this.store.dispatch({
-      type: this.actionTypes.initMessageLoad
+      type: this.actionTypes.initLoad
     });
     if (!currentContact) {
       this.store.dispatch({
-        type: this.actionTypes.messagesLoaded,
-        messages: []
+        type: this.actionTypes.loadReset
       });
       return;
     }
@@ -104,7 +99,7 @@ export default class RecentMessages extends RcModule {
       this._messageStore.messages
     );
     this.store.dispatch({
-      type: this.actionTypes.messagesLoaded,
+      type: this.actionTypes.loadSuccess,
       messages
     });
     this._prevMessageStoreTimestamp = this._messageStore.updatedTimestamp;
@@ -112,7 +107,7 @@ export default class RecentMessages extends RcModule {
 
   cleanUpMessages() {
     this.store.dispatch({
-      type: this.actionTypes.messagesReset
+      type: this.actionTypes.loadReset
     });
     this._currentContact = null;
   }

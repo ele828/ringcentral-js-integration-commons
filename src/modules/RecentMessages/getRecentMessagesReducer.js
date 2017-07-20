@@ -1,20 +1,26 @@
 import { combineReducers } from 'redux';
+import messageStatus from './messageStatus';
 import getModuleStatusReducer from '../../lib/getModuleStatusReducer';
 
 export function getMessagesReducer(types) {
   return (state = [], { type, messages }) => {
-    if (type === types.messagesLoaded) return messages;
-    else if (type === types.messagesReset) return [];
+    if (type === types.loadSuccess) return messages;
+    else if (type === types.loadReset) return [];
     return state;
   };
 }
 
 export function getMessageStatusReducer(types) {
   return (state = null, { type }) => {
-    if (type === types.initMessageLoad) return type;
-    else if (type === types.messagesLoaded) return type;
-    else if (type === types.messagesReset) return type;
-    return state;
+    switch (type) {
+      case types.initLoad:
+        return messageStatus.loading;
+      case types.loadReset:
+      case types.loadSuccess:
+        return messageStatus.loaded;
+      default:
+        return state;
+    }
   };
 }
 
