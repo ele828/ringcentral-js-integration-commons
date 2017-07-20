@@ -85,6 +85,7 @@ export default class RecentMessages extends RcModule {
       return;
     }
     this._currentContact = currentContact;
+    this._prevMessageStoreTimestamp = this._messageStore.updatedTimestamp;
     this.store.dispatch({
       type: this.actionTypes.initLoad
     });
@@ -102,7 +103,6 @@ export default class RecentMessages extends RcModule {
       type: this.actionTypes.loadSuccess,
       messages
     });
-    this._prevMessageStoreTimestamp = this._messageStore.updatedTimestamp;
   }
 
   cleanUpMessages() {
