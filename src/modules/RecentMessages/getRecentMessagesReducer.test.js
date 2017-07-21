@@ -66,7 +66,7 @@ describe('RecentMessages :: getMessageStatusReducer', () => {
         type: actionTypes.initLoad,
       })).to.equal(messageStatus.loading);
       expect(reducer(null, {
-        type: actionTypes.reset,
+        type: actionTypes.loadReset,
       })).to.equal(messageStatus.loaded);
       expect(reducer(null, {
         type: actionTypes.loadSuccess,

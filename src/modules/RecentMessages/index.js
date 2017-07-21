@@ -16,7 +16,6 @@ export default class RecentMessages extends RcModule {
     ...options
   }) {
     super({
-      name: 'recentMessages',
       actionTypes,
       ...options
     });
