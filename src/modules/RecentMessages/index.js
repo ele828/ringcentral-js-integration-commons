@@ -5,6 +5,7 @@ import actionTypes from './actionTypes';
 import messageStatus from './messageStatus';
 import getRecentMessagesReducer from './getRecentMessagesReducer';
 import getDateFrom from '../../lib/getDateFrom';
+import concurrentExecute from '../../lib/concurrentExecute';
 
 /**
  * Retrieve all recent messages related to a specified contact.
@@ -236,14 +237,14 @@ export default class RecentMessages extends RcModule {
 
     // TODO: Because we need to navigate to the message page,
     // So we may need to push new messages to messageStore
-    return Promise.all(recentMessagesPromise)
+    return concurrentExecute(recentMessagesPromise, 5, 500)
       .then(this._flattenToMessageRecords)
       .then(this._markAsRemoteMessage)
       .then(messages => this._sortMessages(messages));
   }
 
   _fetchMessageList(params) {
-    return this._client.account().extension().messageStore().list(params);
+    return () => this._client.account().extension().messageStore().list(params);
   }
 
   _countUnreadMessages(messages) {
