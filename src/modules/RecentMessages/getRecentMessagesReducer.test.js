@@ -7,10 +7,10 @@ import actionTypes from './actionTypes';
 import messageStatus from './messageStatus';
 
 describe('RecentMessages :: getMessagesReducer', () => {
-  it('getCurrentPageReducer should be a function', () => {
+  it('getMessagesReducer should be a function', () => {
     expect(getMessagesReducer).to.be.a('function');
   });
-  it('getCurrentPageReducer should return a reducer', () => {
+  it('getMessagesReducer should return a reducer', () => {
     expect(getMessagesReducer()).to.be.a('function');
   });
 
