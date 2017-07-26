@@ -18,7 +18,7 @@ export default async function concurrentExecute(
 ) {
   const { promise = Promise, delayFn = sleep } = options;
   if (!Array.isArray(promiseThunks) || promiseThunks.length <= 0) {
-    throw new Error('promiseThunks should be a nonempty array');
+    return [];
   }
   if (typeof promiseThunks[0] !== 'function') {
     throw new Error('concurrentExecute needs promise thunk');

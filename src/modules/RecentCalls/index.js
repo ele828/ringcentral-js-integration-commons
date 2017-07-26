@@ -152,17 +152,11 @@ export default class RecentCalls extends RcModule {
   }
 
   _filterPhoneNumber(call) {
-    return ({ type, phoneType, phoneNumber }) => (
-      (
-        type === 'directPhone' && (
-        phoneNumber === call.from.phoneNumber ||
-        phoneNumber === call.to.phoneNumber
-      )) ||
-      (
-        phoneType === 'extension' && (
-        phoneNumber === call.from.extensionNumber ||
-        phoneNumber === call.to.extensionNumber
-      ))
+    return ({ phoneNumber }) => (
+      phoneNumber === call.from.phoneNumber ||
+      phoneNumber === call.to.phoneNumber ||
+      phoneNumber === call.from.extensionNumber ||
+      phoneNumber === call.to.extensionNumber
     );
   }
 
@@ -187,16 +181,9 @@ export default class RecentCalls extends RcModule {
 
     // CallLog API doesn't support plus sign in phoneNumber
     const phoneNumbers = currentContact.phoneNumbers;
-    const recentCallsPromises = phoneNumbers.reduce((acc, { type, phoneType, phoneNumber }) => {
+    const recentCallsPromises = phoneNumbers.reduce((acc, { phoneType, phoneNumber }) => {
       phoneNumber = phoneNumber.replace('+', '');
-      if (type === 'directPhone') {
-        const promise = this._fetchCallLogList(
-          Object.assign({}, params, {
-            phoneNumber
-          })
-        );
-        return acc.concat(promise);
-      } else if (phoneType === 'extension') {
+      if (phoneType === 'extension') {
         const promise = this._fetchCallLogList(
           Object.assign({}, params, {
             extensionNumber: phoneNumber
@@ -204,7 +191,12 @@ export default class RecentCalls extends RcModule {
         );
         return acc.concat(promise);
       }
-      return acc;
+      const promise = this._fetchCallLogList(
+        Object.assign({}, params, {
+          phoneNumber
+        })
+      );
+      return acc.concat(promise);
     }, []);
 
     return concurrentExecute(recentCallsPromises, 5, 500)

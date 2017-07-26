@@ -14,11 +14,11 @@ function addPhoneToContact(contact, phone, type) {
     number => number && number.phoneNumber === phone
   );
   if (existedPhone) {
-    existedPhone.type = type;
+    existedPhone.phoneType = type;
   } else {
     contact.phoneNumbers.push({
       phoneNumber: phone,
-      type,
+      phoneType: type,
     });
   }
 }
@@ -162,13 +162,19 @@ export default class Contacts extends RcModule {
       if (!found) {
         return;
       }
+      const name =
+        `${
+          contact.firstName ? contact.firstName : ''
+        } ${
+          contact.lastName ? contact.lastName : ''
+        }`;
       const matchedContact = {
         ...contact,
         phoneNumbers: [
           ...contact.phoneNumbers
         ],
         entityType: 'contact',
-        name: `${contact.firstName} ${contact.lastName}`,
+        name,
       };
       if (contact.extensionNumber) {
         matchedContact.phoneNumbers.push({

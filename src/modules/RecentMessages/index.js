@@ -186,10 +186,10 @@ export default class RecentMessages extends RcModule {
 
   _filterPhoneNumber(message) {
     return ({ phoneNumber }) => (
-        phoneNumber === message.from.phoneNumber ||
-        !!message.to.find(to => to.phoneNumber === phoneNumber) ||
-        phoneNumber === message.from.extensionNumber ||
-        !!message.to.find(to => to.extensionNumber === phoneNumber)
+      phoneNumber === message.from.phoneNumber ||
+      !!message.to.find(to => to.phoneNumber === phoneNumber) ||
+      phoneNumber === message.from.extensionNumber ||
+      !!message.to.find(to => to.extensionNumber === phoneNumber)
     );
   }
 
