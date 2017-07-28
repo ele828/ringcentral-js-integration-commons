@@ -124,7 +124,7 @@ describe('RecentMessages Unit Test', () => {
         lastModifiedTime: '2017-01-26T06:52:43.515Z'
       }];
       const contact = {
-        phoneNumbers: [171]
+        phoneNumbers: ['171']
       };
       const dateFrom = new Date('2017-02-26T06:52:43.515Z');
       const retval = await recentMessages._getLocalRecentMessages(
@@ -147,7 +147,7 @@ describe('RecentMessages Unit Test', () => {
         messages = messages.concat(messages);
       }
       const contact = {
-        phoneNumbers: [171]
+        phoneNumbers: ['171']
       };
       const dateFrom = new Date('2017-02-26T06:52:43.515Z');
       const retval = await recentMessages._getLocalRecentMessages(
@@ -163,12 +163,12 @@ describe('RecentMessages Unit Test', () => {
   describe('_filterPhoneNumber', () => {
     it('should find all matched phoneNumbers in to and from fields', () => {
       // eslint-disable-next-line
-      const messages = [{ from: { phoneNumber: 123 }, to: []}, { from: { phoneNumber: 456 }, to: []}, { from: {}, to: [{ phoneNumber: 789 }] }];
+      const messages = [{ from: { phoneNumber: '+123' }, to: []}, { from: { phoneNumber: '+456' }, to: []}, { from: {}, to: [{ phoneNumber: '+789' }] }];
       const phoneNumbers = [
-        { phoneNumber: 123 },
-        { phoneNumber: 456 },
-        { phoneNumber: 789 },
-        { phoneNumber: 171 }
+        { phoneNumber: '+123' },
+        { phoneNumber: '+456' },
+        { phoneNumber: '+789' },
+        { phoneNumber: '171' }
       ];
       let func;
       const matches = [];
@@ -182,12 +182,12 @@ describe('RecentMessages Unit Test', () => {
 
     it('should find all matched extensionNumber in to and from fields', () => {
       // eslint-disable-next-line
-      const messages = [{ from: { extensionNumber: 123 }, to: []}, { from: { extensionNumber: 456 }, to: []}, { from: {}, to: [{ extensionNumber: 789 }] }];
+      const messages = [{ from: { extensionNumber: '123' }, to: []}, { from: { extensionNumber: '456' }, to: []}, { from: {}, to: [{ extensionNumber: '789' }] }];
       const phoneNumbers = [
-        { phoneNumber: 123 },
-        { phoneNumber: 456 },
-        { phoneNumber: 789 },
-        { phoneNumber: 171 }
+        { phoneNumber: '123' },
+        { phoneNumber: '456' },
+        { phoneNumber: '789' },
+        { phoneNumber: '171' }
       ];
       let func;
       const matches = [];
@@ -201,12 +201,12 @@ describe('RecentMessages Unit Test', () => {
 
     it('should find all matched phoneNumber and extensionNumber in to and from fields', () => {
       // eslint-disable-next-line
-      const messages = [{ from: { extensionNumber: 123 }, to: []}, { from: { phoneNumber: 456 }, to: []}, { from: {}, to: [{ extensionNumber: 789 }] }];
+      const messages = [{ from: { extensionNumber: '123' }, to: []}, { from: { phoneNumber: '456' }, to: []}, { from: {}, to: [{ extensionNumber: '789' }] }];
       const phoneNumbers = [
-        { phoneNumber: 123 },
-        { phoneNumber: 456 },
-        { phoneNumber: 789 },
-        { phoneNumber: 171 }
+        { phoneNumber: '123' },
+        { phoneNumber: '456' },
+        { phoneNumber: '789' },
+        { phoneNumber: '171' }
       ];
       let func;
       const matches = [];
@@ -227,9 +227,9 @@ describe('RecentMessages Unit Test', () => {
       sinon.stub(recentMessages, '_sortMessages').callsFake(p => p);
       const contact = {
         phoneNumbers: [{
-          phoneNumber: 123
+          phoneNumber: '123'
         }, {
-          phoneNumber: 456
+          phoneNumber: '456'
         }]
       };
       await recentMessages._fetchRemoteRecentMessages(contact, null, null, 5);
@@ -243,9 +243,9 @@ describe('RecentMessages Unit Test', () => {
       sinon.stub(recentMessages, '_sortMessages').callsFake(p => p);
       const contact = {
         phoneNumbers: [{
-          phoneNumber: 123
+          phoneNumber: '123'
         }, {
-          phoneNumber: 456
+          phoneNumber: '456'
         }]
       };
       const expected = [{
@@ -253,13 +253,13 @@ describe('RecentMessages Unit Test', () => {
         dateFrom: 'dateFrom',
         messageType: ['SMS', 'Text'],
         perPage: 5,
-        phoneNumber: 123
+        phoneNumber: '123'
       }, {
         dateTo: 'dateTo',
         dateFrom: 'dateFrom',
         messageType: ['SMS', 'Text'],
         perPage: 5,
-        phoneNumber: 456
+        phoneNumber: '456'
       }];
       const messages = await recentMessages._fetchRemoteRecentMessages(contact, 'dateFrom', 'dateTo', 5);
       expect(messages).to.deep.equal(expected);
