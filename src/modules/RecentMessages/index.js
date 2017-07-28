@@ -38,7 +38,7 @@ export default class RecentMessages extends RcModule {
     this.store.subscribe(() => this._onStateChange());
   }
 
-  async _onStateChange() {
+  _onStateChange() {
     if (
       this.pending &&
       this._messageStore.ready

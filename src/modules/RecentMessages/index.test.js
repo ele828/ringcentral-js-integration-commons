@@ -46,11 +46,28 @@ describe('RecentMessages Unit Test', () => {
         }
       });
       recentMessages._store = store;
-      sinon.stub(recentMessages, 'pending').callsFake({
+      const spy = sinon.stub(store, 'dispatch');
+      sinon.stub(recentMessages, 'pending', {
         get() { return true; }
       });
       recentMessages._onStateChange();
-      expect(recentMessages.ready).to.equal(true);
+      expect(spy.calledWith({ type: actionTypes.initSuccess }));
+    });
+
+    it('should not be able to init module if module is not pending', () => {
+      recentMessages = new RecentMessages({
+        client: {},
+        messageStore: {
+          ready: true
+        }
+      });
+      recentMessages._store = store;
+      const spy = sinon.spy(store, 'dispatch');
+      sinon.stub(recentMessages, 'pending', {
+        get() { return false; }
+      });
+      recentMessages._onStateChange();
+      expect(spy.notCalled).to.equal(true);
     });
 
     it('should be able to reset if messageStore is reset', () => {
@@ -61,11 +78,31 @@ describe('RecentMessages Unit Test', () => {
         }
       });
       recentMessages._store = store;
-      sinon.stub(recentMessages, 'ready').callsFake({
+      const spy = sinon.spy(store, 'dispatch');
+      sinon.stub(recentMessages, 'ready', {
         get() { return true; }
       });
       recentMessages._onStateChange();
-      expect(recentMessages.pending).to.equal(true);
+      expect(spy.calledWith({ type: actionTypes.resetSuccess }));
+    });
+
+    it('should not be able to reset if module is not ready', () => {
+      recentMessages = new RecentMessages({
+        client: {},
+        messageStore: {
+          ready: false
+        }
+      });
+      recentMessages._store = store;
+      const spy = sinon.spy(store, 'dispatch');
+      sinon.stub(recentMessages, 'pending', {
+        get() { return false; }
+      });
+      sinon.stub(recentMessages, 'ready', {
+        get() { return false; }
+      });
+      recentMessages._onStateChange();
+      expect(spy.notCalled).to.equal(true);
     });
 
     it('should subscribe to MessageStore change', () => {
@@ -75,10 +112,8 @@ describe('RecentMessages Unit Test', () => {
           return 0;
         }
       });
-      sinon.stub(recentMessages, 'ready').callsFake({
-        get() {
-          return true;
-        }
+      sinon.stub(recentMessages, 'ready', {
+        get() { return true; }
       });
       recentMessages._onStateChange();
       expect(recentMessages.getMessages.called);

@@ -46,11 +46,60 @@ describe('RecentCalls Unit Test', () => {
         }
       });
       recentCalls._store = store;
-      sinon.stub(recentCalls, 'pending').callsFake({
+      const spy = sinon.spy(store, 'dispatch');
+      sinon.stub(recentCalls, 'pending', {
         get() { return true; }
       });
       recentCalls._onStateChange();
-      expect(recentCalls.ready).to.equal(true);
+      expect(spy.calledWith({ type: actionTypes.initSuccess }));
+    });
+
+    it('should not be able to init module if module is not pending', () => {
+      recentCalls = new RecentCalls({
+        client: {},
+        callLog: {
+          ready: true
+        }
+      });
+      recentCalls._store = store;
+      const spy = sinon.spy(store, 'dispatch');
+      sinon.stub(recentCalls, 'pending', {
+        get() { return false; }
+      });
+      recentCalls._onStateChange();
+      expect(spy.notCalled).to.equal(true);
+    });
+
+    it('should be able to reset module if CallLog is reset', () => {
+      recentCalls = new RecentCalls({
+        client: {},
+        callLog: {
+          ready: false
+        }
+      });
+      recentCalls._store = store;
+      const spy = sinon.spy(store, 'dispatch');
+      sinon.stub(recentCalls, 'ready', {
+        get() { return true; }
+      });
+      recentCalls._onStateChange();
+      expect(spy.calledWith({ type: actionTypes.resetSuccess }));
+    });
+
+    it('should not be able to reset module if module is not ready', () => {
+      recentCalls = new RecentCalls({
+        client: {},
+        callLog: {
+          ready: false
+        }
+      });
+      recentCalls._store = store;
+      const spy = sinon.stub(store, 'dispatch');
+      sinon.stub(recentCalls, 'ready', {
+        get() { return false; }
+      });
+      recentCalls._onStateChange();
+      expect(spy.notCalled).to.equal(true);
     });
   });
 
@@ -112,12 +161,12 @@ describe('RecentCalls Unit Test', () => {
   describe('_filterPhoneNumber', () => {
     it('should find all matched phoneNumbers in to and from fields', () => {
       // eslint-disable-next-line
-      const calls = [{ from: { phoneNumber: 123 }, to: { phoneNumber: 1 }}, { from: { phoneNumber: 456 }, to: { phoneNumber: 1 }}, { from: { phoneNumber: 1 }, to: { phoneNumber: 789 } }];
+      const calls = [{ from: { phoneNumber: '+123' }, to: { phoneNumber: '+1' }}, { from: { phoneNumber: '+456' }, to: { phoneNumber: '+1' }}, { from: { phoneNumber: '+1' }, to: { phoneNumber: '+789' } }];
       const phoneNumbers = [
-        { phoneNumber: 123 },
-        { phoneNumber: 456 },
-        { phoneNumber: 789 },
-        { phoneNumber: 171 }
+        { phoneNumber: '+123' },
+        { phoneNumber: '+456' },
+        { phoneNumber: '+789' },
+        { phoneNumber: '171' }
       ];
       let func;
       const matches = [];
@@ -131,12 +180,12 @@ describe('RecentCalls Unit Test', () => {
 
     it('should find all matched extensionNumber in to and from fields', () => {
       // eslint-disable-next-line
-      const calls = [{ from: { extensionNumber: '123' }, to: { phoneNumber: 1 }}, { from: { extensionNumber: 456 }, to: { phoneNumber: 1 }}, { from: { phoneNumber: 1 }, to: { extensionNumber: 789 } }];
+      const calls = [{ from: { extensionNumber: '+123' }, to: { phoneNumber: '+1' }}, { from: { extensionNumber: '+456' }, to: { phoneNumber: '+1' }}, { from: { phoneNumber: '+1' }, to: { extensionNumber: '+789' } }];
       const phoneNumbers = [
-        { phoneNumber: '123' },
-        { phoneNumber: 456 },
-        { phoneNumber: 789 },
-        { phoneNumber: 171 }
+        { phoneNumber: '+123' },
+        { phoneNumber: '+456' },
+        { phoneNumber: '+789' },
+        { phoneNumber: '171' }
       ];
       let func;
       const matches = [];
@@ -150,12 +199,12 @@ describe('RecentCalls Unit Test', () => {
 
     it('should find all matched phoneNumber and extensionNumber in to and from fields', () => {
       // eslint-disable-next-line
-      const calls = [{ from: { phoneNumber: '123' }, to: { phoneNumber: 1 }}, { from: { phoneNumber: 456 }, to: { phoneNumber: 1 }}, { from: { phoneNumber: 1 }, to: { phoneNumber: 789 } }];
+      const calls = [{ from: { phoneNumber: '+123' }, to: { phoneNumber: '+1' }}, { from: { phoneNumber: '+456' }, to: { phoneNumber: '+1' }}, { from: { phoneNumber: '+1' }, to: { phoneNumber: '+789' } }];
       const phoneNumbers = [
-        { phoneNumber: '123' },
-        { phoneNumber: 456 },
-        { phoneNumber: 789 },
-        { phoneNumber: 171 }
+        { phoneNumber: '+123' },
+        { phoneNumber: '+456' },
+        { phoneNumber: '+789' },
+        { phoneNumber: '171' }
       ];
       let func;
       const matches = [];

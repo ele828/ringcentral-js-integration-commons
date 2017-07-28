@@ -29,7 +29,7 @@ export default class RecentCalls extends RcModule {
     this.store.subscribe(() => this._onStateChange());
   }
 
-  async _onStateChange() {
+  _onStateChange() {
     if (
       this.pending &&
       this._callLog.ready
