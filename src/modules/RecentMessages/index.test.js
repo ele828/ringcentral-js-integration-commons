@@ -154,9 +154,9 @@ describe('RecentMessages Unit Test', () => {
     it('should only get messages within certain days', async () => {
       sinon.stub(recentMessages, '_filterPhoneNumber').callsFake(() => () => true);
       const messages = [{
-        lastModifiedTime: '2017-07-26T06:52:43.515Z'
+        creationTime: '2017-07-26T06:52:43.515Z'
       }, {
-        lastModifiedTime: '2017-01-26T06:52:43.515Z'
+        creationTime: '2017-01-26T06:52:43.515Z'
       }];
       const contact = {
         phoneNumbers: ['171']
@@ -174,9 +174,9 @@ describe('RecentMessages Unit Test', () => {
     it('should only get 5 messages even if there are more matches', async () => {
       sinon.stub(recentMessages, '_filterPhoneNumber').callsFake(() => () => true);
       let messages = [{
-        lastModifiedTime: '2017-07-26T06:52:43.515Z'
+        creationTime: '2017-07-26T06:52:43.515Z'
       }, {
-        lastModifiedTime: '2017-01-26T06:52:43.515Z'
+        creationTime: '2017-01-26T06:52:43.515Z'
       }];
       for (let i = 0; i < 6; i += 1) {
         messages = messages.concat(messages);
@@ -286,13 +286,13 @@ describe('RecentMessages Unit Test', () => {
       const expected = [{
         dateTo: 'dateTo',
         dateFrom: 'dateFrom',
-        messageType: ['SMS', 'Text'],
+        messageType: ['SMS', 'Text', 'Pager'],
         perPage: 5,
         phoneNumber: '123'
       }, {
         dateTo: 'dateTo',
         dateFrom: 'dateFrom',
-        messageType: ['SMS', 'Text'],
+        messageType: ['SMS', 'Text', 'Pager'],
         perPage: 5,
         phoneNumber: '456'
       }];
@@ -329,9 +329,9 @@ describe('RecentMessages Unit Test', () => {
 
     it('_sortMessages', () => {
       const messages = [
-        { id: 1, lastModifiedTime: '2017-07-26T06:52:43.515Z' },
-        { id: 2, lastModifiedTime: '2017-07-29T06:52:43.515Z' },
-        { id: 3, lastModifiedTime: '2017-07-23T06:52:43.515Z' },
+        { id: 1, creationTime: '2017-07-26T06:52:43.515Z' },
+        { id: 2, creationTime: '2017-07-29T06:52:43.515Z' },
+        { id: 3, creationTime: '2017-07-23T06:52:43.515Z' },
       ];
       const ret = recentMessages._sortMessages(messages);
       expect(ret[0].id).to.equal(2);
