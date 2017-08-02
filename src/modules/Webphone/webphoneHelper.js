@@ -1,3 +1,5 @@
+import recordStatus from './recordStatus';
+
 export function isBrowerSupport() {
   const isChrome = !!(navigator.userAgent.match(/Chrom(e|ium)/));
   if (!isChrome) {
@@ -24,8 +26,8 @@ export function normalizeSession(session) {
     creationTime: session.creationTime,
     isOnHold: !!session.isOnHold().local,
     isOnMute: !!session.isOnMute,
-    isOnRecord: !!session.isOnRecord,
     isOnFlip: !!session.isOnFlip,
+    recordStatus: session.recordStatus || recordStatus.idle,
     contactMatch: session.contactMatch,
     minimized: !!session.minimized,
   };

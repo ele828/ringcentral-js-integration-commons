@@ -7,6 +7,7 @@ import sleep from '../../lib/sleep';
 import moduleStatuses from '../../enums/moduleStatuses';
 import connectionStatus from './connectionStatus';
 import sessionStatus from './sessionStatus';
+import recordStatus from './recordStatus';
 import actionTypes from './actionTypes';
 import callDirections from '../../enums/callDirections';
 import webphoneErrors from './webphoneErrors';
@@ -721,18 +722,32 @@ export default class Webphone extends RcModule {
   @proxify
   async startRecord(sessionId) {
     const session = this._sessions.get(sessionId);
+    console.log('startRecord', session);
     if (!session) {
       return;
     }
+    // If the status of current session is not connected,
+    // the recording process can not be started.
+    if (session.callStatus === sessionStatus.connecting) {
+      return;
+    }
     try {
-      session.isOnRecord = true;
+      session.recordStatus = recordStatus.pending;
       this._updateSessions();
       await session.startRecord();
+      session.recordStatus = recordStatus.recording;
+      this._updateSessions();
       console.log('Recording Started');
     } catch (e) {
-      session.isOnRecord = false;
-      this._updateSessions();
       console.error(e);
+      session.recordStatus = recordStatus.idle;
+      this._updateSessions();
+      this._alert.danger({
+        message: webphoneErrors.recordError,
+        payload: {
+          errorCode: e.code
+        }
+      });
     }
   }
 
@@ -743,13 +758,15 @@ export default class Webphone extends RcModule {
       return;
     }
     try {
-      session.isOnRecord = false;
+      session.recordStatus = recordStatus.pending;
       this._updateSessions();
       await session.stopRecord();
+      session.recordStatus = recordStatus.idle;
+      this._updateSessions();
       console.log('Recording Stopped');
     } catch (e) {
       console.error(e);
-      session.isOnRecord = true;
+      session.recordStatus = recordStatus.recording;
       this._updateSessions();
     }
   }
