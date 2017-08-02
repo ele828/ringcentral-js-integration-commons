@@ -138,7 +138,7 @@ export default class RecentMessages extends RcModule {
     // we need to search for messages on server.
     if (recentMessages.length < length) {
       const dateTo = recentMessages.length > 0
-        ? recentMessages[recentMessages.length - 1].lastModifiedTime
+        ? recentMessages[recentMessages.length - 1].creationTime
         : undefined;
 
       // This will always be sorted
@@ -176,7 +176,7 @@ export default class RecentMessages extends RcModule {
       matches = phoneNumbers.find(this._filterPhoneNumber(message));
 
       // Check if message is within certain days
-      if (!!matches && new Date(message.lastModifiedTime) > dateFrom) {
+      if (!!matches && new Date(message.creationTime) > dateFrom) {
         recentMessages.push(message);
       }
       if (recentMessages.length >= length) break;
@@ -249,7 +249,7 @@ export default class RecentMessages extends RcModule {
   _sortMessages(recentMessages) {
     // Sort by time in descending order
     return recentMessages.sort((a, b) =>
-      new Date(b.lastModifiedTime) - new Date(a.lastModifiedTime)
+      new Date(b.creationTime) - new Date(a.creationTime)
     );
   }
 
