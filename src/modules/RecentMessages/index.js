@@ -210,12 +210,11 @@ export default class RecentMessages extends RcModule {
     const params = {
       dateTo,
       dateFrom,
-      messageType: ['SMS', 'Text'],
+      messageType: ['SMS', 'Text', 'Pager'],
       perPage: length
     };
     const phoneNumbers = currentContact.phoneNumbers;
     const recentMessagesPromise = phoneNumbers.reduce((acc, { phoneNumber }) => {
-      // Cannot filter out by extensionNumber
       if (phoneNumber) {
         const promise = this._fetchMessageList(
           Object.assign({}, params, {
