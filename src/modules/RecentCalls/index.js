@@ -13,7 +13,7 @@ import concurrentExecute from '../../lib/concurrentExecute';
 export default class RecentCalls extends RcModule {
   constructor({
     client,
-    callLog,
+    callHistory,
     ...options
   }) {
     super({
@@ -21,7 +21,7 @@ export default class RecentCalls extends RcModule {
       ...options
     });
     this._client = this::ensureExist(client, 'client');
-    this._callLog = this::ensureExist(callLog, 'callLog');
+    this._callHistory = this::ensureExist(callHistory, 'callHistory');
     this._reducer = getRecentCallsReducer(this.actionTypes);
   }
 
@@ -32,14 +32,14 @@ export default class RecentCalls extends RcModule {
   _onStateChange() {
     if (
       this.pending &&
-      this._callLog.ready
+      this._callHistory.ready
     ) {
       this.store.dispatch({
         type: this.actionTypes.initSuccess,
       });
     } else if (
       this.ready &&
-      !this._callLog.ready
+      !this._callHistory.ready
     ) {
       this.store.dispatch({
         type: this.actionTypes.resetSuccess
@@ -76,7 +76,7 @@ export default class RecentCalls extends RcModule {
     }
     const calls = await this._getRecentCalls(
       currentContact,
-      this._callLog.calls
+      this._callHistory.calls
     );
     this.store.dispatch({
       type: this.actionTypes.loadSuccess,
@@ -98,7 +98,7 @@ export default class RecentCalls extends RcModule {
   /**
    * Searching for recent calls of specific contact.
    * @param {Object} currentContact Current contact
-   * @param {Array} calls Calls in callLog
+   * @param {Array} calls Calls in callHistory
    * @param {Number} daySpan Find calls within certain days
    * @param {Number} length Maximum length of recent calls
    * @return {Array}
@@ -130,7 +130,7 @@ export default class RecentCalls extends RcModule {
   }
 
   /**
-   * Get recent calls from callLog.
+   * Get recent calls from callHistory.
    * @param {Object} currentContact
    * @param {Array} calls
    * @param {Date} dateFrom
