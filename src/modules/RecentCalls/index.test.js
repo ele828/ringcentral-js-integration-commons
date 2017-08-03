@@ -13,7 +13,7 @@ describe('RecentCalls Unit Test', () => {
     store = createStore(getRecentCallsReducer(actionTypes));
     recentCalls = new RecentCalls({
       client: {},
-      callLog: {
+      callHistory: {
         ready: true
       }
     });
@@ -24,11 +24,11 @@ describe('RecentCalls Unit Test', () => {
     it('should throw if options.client is undefined', () => {
       expect(() => {
         recentCalls = new RecentCalls({
-          callLog: {}
+          callHistory: {}
         });
       }).to.throw();
     });
-    it('should throw if options.callLog is undefined', () => {
+    it('should throw if options.callHistory is undefined', () => {
       expect(() => {
         recentCalls = new RecentCalls({
           client: {}
@@ -41,7 +41,7 @@ describe('RecentCalls Unit Test', () => {
     it('should be able to init module', () => {
       recentCalls = new RecentCalls({
         client: {},
-        callLog: {
+        callHistory: {
           ready: true
         }
       });
@@ -57,7 +57,7 @@ describe('RecentCalls Unit Test', () => {
     it('should not be able to init module if module is not pending', () => {
       recentCalls = new RecentCalls({
         client: {},
-        callLog: {
+        callHistory: {
           ready: true
         }
       });
@@ -70,10 +70,10 @@ describe('RecentCalls Unit Test', () => {
       expect(spy.notCalled).to.equal(true);
     });
 
-    it('should be able to reset module if CallLog is reset', () => {
+    it('should be able to reset module if CallHistory is reset', () => {
       recentCalls = new RecentCalls({
         client: {},
-        callLog: {
+        callHistory: {
           ready: false
         }
       });
@@ -89,7 +89,7 @@ describe('RecentCalls Unit Test', () => {
     it('should not be able to reset module if module is not ready', () => {
       recentCalls = new RecentCalls({
         client: {},
-        callLog: {
+        callHistory: {
           ready: false
         }
       });
