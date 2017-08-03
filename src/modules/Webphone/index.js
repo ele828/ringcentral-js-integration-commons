@@ -722,7 +722,6 @@ export default class Webphone extends RcModule {
   @proxify
   async startRecord(sessionId) {
     const session = this._sessions.get(sessionId);
-    console.log('startRecord', session);
     if (!session) {
       return;
     }
@@ -737,11 +736,20 @@ export default class Webphone extends RcModule {
       await session.startRecord();
       session.recordStatus = recordStatus.recording;
       this._updateSessions();
-      console.log('Recording Started');
     } catch (e) {
       console.error(e);
       session.recordStatus = recordStatus.idle;
       this._updateSessions();
+      // Recording has been disabled
+      if (e && e.code === -5) {
+        this._alert.danger({
+          message: webphoneErrors.recordDisabled
+        });
+        // Disabled phone recording
+        session.recordStatus = recordStatus.pending;
+        this._updateSessions();
+        return;
+      }
       this._alert.danger({
         message: webphoneErrors.recordError,
         payload: {
@@ -763,7 +771,6 @@ export default class Webphone extends RcModule {
       await session.stopRecord();
       session.recordStatus = recordStatus.idle;
       this._updateSessions();
-      console.log('Recording Stopped');
     } catch (e) {
       console.error(e);
       session.recordStatus = recordStatus.recording;
