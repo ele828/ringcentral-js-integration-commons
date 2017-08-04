@@ -27,6 +27,7 @@ export function normalizeSession(session) {
     isOnHold: !!session.isOnHold().local,
     isOnMute: !!session.isOnMute,
     isOnFlip: !!session.isOnFlip,
+    isOnTransfer: !!session.isOnTransfer,
     recordStatus: session.recordStatus || recordStatus.idle,
     contactMatch: session.contactMatch,
     minimized: !!session.minimized,

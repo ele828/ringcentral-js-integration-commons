@@ -15,5 +15,6 @@ export default new Enum([
   'holdError',
   'flipError',
   'recordError',
-  'recordDisabled'
+  'recordDisabled',
+  'transferError'
 ], 'webphone');
