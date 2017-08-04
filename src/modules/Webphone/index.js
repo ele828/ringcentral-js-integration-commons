@@ -798,19 +798,19 @@ export default class Webphone extends RcModule {
     if (!session) {
       return;
     }
-    const validatedResult
-      = await this._numberValidate.validateNumbers([transferNumber]);
-    if (!validatedResult.result) {
-      validatedResult.errors.forEach((error) => {
-        this._alert.warning({
-          message: callErrors[error.type]
-        });
-      });
-      return;
-    }
     try {
       session.isOnTransfer = true;
       this._updateSessions();
+      const validatedResult
+        = await this._numberValidate.validateNumbers([transferNumber]);
+      if (!validatedResult.result) {
+        validatedResult.errors.forEach((error) => {
+          this._alert.warning({
+            message: callErrors[error.type]
+          });
+        });
+        return;
+      }
       const validPhoneNumber =
         validatedResult.numbers[0] && validatedResult.numbers[0].e164;
       await session.transfer(validPhoneNumber);
