@@ -60,17 +60,17 @@ export default class RecentCalls extends RcModule {
     // No need to calculate recent calls of the same contact repeatly
     if (
       !!currentContact &&
-      currentContact === this._currentContact
+      !!this.calls[currentContact.id]
     ) {
       return;
     }
-    this._currentContact = currentContact;
     this.store.dispatch({
       type: this.actionTypes.initLoad
     });
     if (!currentContact) {
       this.store.dispatch({
-        type: this.actionTypes.loadReset
+        type: this.actionTypes.loadReset,
+        contact: currentContact
       });
       return;
     }
@@ -80,15 +80,16 @@ export default class RecentCalls extends RcModule {
     );
     this.store.dispatch({
       type: this.actionTypes.loadSuccess,
-      calls
+      calls,
+      contact: currentContact
     });
   }
 
-  cleanUpCalls() {
+  cleanUpCalls(contact) {
     this.store.dispatch({
-      type: this.actionTypes.loadReset
+      type: this.actionTypes.loadReset,
+      contact
     });
-    this._currentContact = null;
   }
 
   get status() {

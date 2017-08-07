@@ -16,28 +16,46 @@ describe('RecentCalls :: getCallsReducer', () => {
 
   describe('callsreducer', () => {
     const reducer = getCallsReducer(actionTypes);
-    it('should have initial state of empty array', () => {
-      expect(reducer(undefined, {})).to.have.lengthOf(0);
+    it('should have initial state of empty object', () => {
+      expect(reducer(undefined, {})).to.deep.equal({});
     });
 
     it('should return original state of actionTypes is not recognized', () => {
-      const originalState = [1, 2, 3];
+      const originalState = { '171': [] };
       expect(reducer(originalState, { type: 'foo' }))
         .to.equal(originalState);
     });
 
-    it('should return calls as passed in', () => {
-      const calls = { id: 1 };
-      expect(reducer([], {
+    it('should return all calls when new call is passed in', () => {
+      const state = { '181': [] };
+      expect(reducer(state, {
         type: actionTypes.loadSuccess,
-        calls
-      })).to.equal(calls);
+        calls: [],
+        contact: { id: '171' }
+      })).to.deep.equal({
+        '181': [],
+        '171': []
+      });
     });
 
-    it('calls should be empty when reset', () => {
-      expect(reducer([], {
-        type: actionTypes.loadReset
-      })).to.have.lengthOf(0);
+    it('call should be removed when reset', () => {
+      const state = {
+        '171': []
+      };
+      expect(reducer(state, {
+        type: actionTypes.loadReset,
+        contact: { id: '171' }
+      })).to.deep.equal({});
+    });
+
+    it('should return original state when contact is undefined', () => {
+      const state = {
+        '171': { id: '171' }
+      };
+      expect(reducer(state, {
+        type: actionTypes.loadReset,
+        contact: undefined
+      })).to.deep.equal(state);
     });
   });
 });

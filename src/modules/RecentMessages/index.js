@@ -27,10 +27,15 @@ export default class RecentMessages extends RcModule {
     this.addSelector(
       'unreadMessageCounts',
       () => this.messages,
-      messages => messages.reduce((acc, cur) => acc + (cur.readStatus !== 'Read' ? 1 : 0), 0)
+      messages => (
+        Object.keys(messages).reduce((unreadCounts, contactId) => {
+          unreadCounts[contactId] = messages[contactId]
+            .reduce((acc, cur) => acc + (cur.readStatus !== 'Read' ? 1 : 0), 0);
+          return unreadCounts;
+        }, {})
+      )
     );
 
-    this._currentContact = null;
     this._prevMessageStoreTimestamp = null;
   }
 
@@ -53,13 +58,19 @@ export default class RecentMessages extends RcModule {
       this.store.dispatch({
         type: this.actionTypes.resetSuccess
       });
-    } else if (this._currentContact !== null) {
+    } else if (Object.keys(this.messages).length > 0) {
       // Listen to messageStore state changes
       if (this._messageStore.updatedTimestamp !== this._prevMessageStoreTimestamp) {
         this._prevMessageStoreTimestamp = this._messageStore.updatedTimestamp;
-        this.getMessages(this._currentContact, true);
+        for (const contact of Object.values(this.contacts)) {
+          this.getMessages(contact, true);
+        }
       }
     }
+  }
+
+  get contacts() {
+    return this.state.contacts;
   }
 
   get messages() {
@@ -80,18 +91,18 @@ export default class RecentMessages extends RcModule {
     if (
       !forceUpdate &&
       !!currentContact &&
-      currentContact === this._currentContact
+      !!this.messages[currentContact.id]
     ) {
       return;
     }
-    this._currentContact = currentContact;
     this._prevMessageStoreTimestamp = this._messageStore.updatedTimestamp;
     this.store.dispatch({
       type: this.actionTypes.initLoad
     });
     if (!currentContact) {
       this.store.dispatch({
-        type: this.actionTypes.loadReset
+        type: this.actionTypes.loadReset,
+        contact: currentContact
       });
       return;
     }
@@ -101,15 +112,16 @@ export default class RecentMessages extends RcModule {
     );
     this.store.dispatch({
       type: this.actionTypes.loadSuccess,
-      messages
+      messages,
+      contact: currentContact
     });
   }
 
-  cleanUpMessages() {
+  cleanUpMessages(contact) {
     this.store.dispatch({
-      type: this.actionTypes.loadReset
+      type: this.actionTypes.loadReset,
+      contact
     });
-    this._currentContact = null;
   }
 
   get status() {

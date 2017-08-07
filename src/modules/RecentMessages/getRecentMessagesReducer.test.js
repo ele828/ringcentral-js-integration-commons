@@ -1,10 +1,66 @@
 import { expect } from 'chai';
 import {
+  getContactsReducer,
   getMessagesReducer,
   getMessageStatusReducer
 } from './getRecentMessagesReducer';
 import actionTypes from './actionTypes';
 import messageStatus from './messageStatus';
+
+describe('RecentMessages :: getContactsReducer', () => {
+  it('getContactsReducer should be a function', () => {
+    expect(getContactsReducer).to.be.a('function');
+  });
+  it('getContactsReducer should return a reducer', () => {
+    expect(getContactsReducer()).to.be.a('function');
+  });
+
+  describe('contactsReducer', () => {
+    const reducer = getContactsReducer(actionTypes);
+    it('should have initial state of empty object', () => {
+      expect(reducer(undefined, {})).to.deep.equal({});
+    });
+
+    it('should return original state of actionTypes is not recognized', () => {
+      const originalState = { 123: [] };
+      expect(reducer(originalState, { type: 'foo' }))
+        .to.equal(originalState);
+    });
+
+    it('should return all contacts when new contact is passed in', () => {
+      expect(reducer({}, {
+        type: actionTypes.loadSuccess,
+        contact: {
+          id: '171'
+        }
+      })).to.deep.equal({
+        '171': {
+          id: '171'
+        }
+      });
+    });
+
+    it('contact should be removed when reset', () => {
+      const state = {
+        '171': { id: '171' }
+      };
+      expect(reducer(state, {
+        type: actionTypes.loadReset,
+        contact: { id: '171' }
+      })).to.deep.equal({});
+    });
+
+    it('should return original state when contact is undefined', () => {
+      const state = {
+        '171': { id: '171' }
+      };
+      expect(reducer(state, {
+        type: actionTypes.loadReset,
+        contact: undefined
+      })).to.deep.equal(state);
+    });
+  });
+});
 
 describe('RecentMessages :: getMessagesReducer', () => {
   it('getMessagesReducer should be a function', () => {
@@ -16,32 +72,40 @@ describe('RecentMessages :: getMessagesReducer', () => {
 
   describe('messagesReducer', () => {
     const reducer = getMessagesReducer(actionTypes);
-    it('should have initial state of empty array', () => {
-      expect(reducer(undefined, {})).to.have.lengthOf(0);
+    it('should have initial state of empty object', () => {
+      expect(reducer(undefined, {})).to.deep.equal({});
     });
 
     it('should return original state of actionTypes is not recognized', () => {
-      const originalState = [1, 2, 3];
+      const originalState = { 123: [] };
       expect(reducer(originalState, { type: 'foo' }))
         .to.equal(originalState);
     });
 
-    it('should return messages as passed in', () => {
+    it('should return all messages when new message passed in', () => {
       const messages = { id: 1 };
-      expect(reducer([], {
+      expect(reducer({}, {
         type: actionTypes.loadSuccess,
-        messages
-      })).to.equal(messages);
+        messages,
+        contact: {
+          id: '171'
+        }
+      })).to.deep.equal({
+        '171': messages
+      });
     });
 
-    it('messages should be empty when reset', () => {
-      expect(reducer([], {
-        type: actionTypes.messagesReset
-      })).to.have.lengthOf(0);
+    it('messages should be removed when reset', () => {
+      const state = {
+        '171': []
+      };
+      expect(reducer(state, {
+        type: actionTypes.loadReset,
+        contact: { id: '171' }
+      })).to.deep.equal({});
     });
   });
 });
-
 
 describe('RecentMessages :: getMessageStatusReducer', () => {
   it('getMessageStatusReducer should be a function', () => {
