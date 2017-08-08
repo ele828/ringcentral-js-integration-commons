@@ -4,13 +4,14 @@ import getModuleStatusReducer from '../../lib/getModuleStatusReducer';
 
 export function getContactsReducer(types) {
   return (state = {}, { type, contact }) => {
+    const contactId = String(contact && contact.id);
     if (type === types.loadSuccess) {
       return {
         ...state,
-        [contact.id]: contact
+        [contactId]: contact
       };
     } else if (type === types.loadReset) {
-      const { [contact && contact.id]: _, ...rest } = state;
+      const { [contactId]: _, ...rest } = state;
       return rest;
     }
     return state;
@@ -19,13 +20,14 @@ export function getContactsReducer(types) {
 
 export function getMessagesReducer(types) {
   return (state = {}, { type, contact, messages }) => {
+    const contactId = String(contact && contact.id);
     if (type === types.loadSuccess) {
       return {
         ...state,
-        [contact.id]: messages
+        [contactId]: messages
       };
     } else if (type === types.loadReset) {
-      const { [contact && contact.id]: _, ...rest } = state;
+      const { [contactId]: _, ...rest } = state;
       return rest;
     }
     return state;

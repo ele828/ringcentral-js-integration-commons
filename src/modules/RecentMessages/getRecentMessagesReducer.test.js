@@ -42,12 +42,15 @@ describe('RecentMessages :: getContactsReducer', () => {
 
     it('contact should be removed when reset', () => {
       const state = {
-        '171': { id: '171' }
+        '171': { id: '171' },
+        '181': { id: '181' },
       };
       expect(reducer(state, {
         type: actionTypes.loadReset,
         contact: { id: '171' }
-      })).to.deep.equal({});
+      })).to.deep.equal({
+        '181': { id: '181' }
+      });
     });
 
     it('should return original state when contact is undefined', () => {

@@ -4,13 +4,14 @@ import callStatus from './callStatus';
 
 export function getCallsReducer(types) {
   return (state = {}, { type, contact, calls }) => {
+    const contactId = String(contact && contact.id);
     if (type === types.loadSuccess) {
       return {
         ...state,
-        [contact.id]: calls
+        [contactId]: calls
       };
     } else if (type === types.loadReset) {
-      const { [contact && contact.id]: _, ...rest } = state;
+      const { [contactId]: _, ...rest } = state;
       return rest;
     }
     return state;
