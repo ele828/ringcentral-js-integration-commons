@@ -74,7 +74,7 @@ export default class CallHistory extends RcModule {
         callMatched = {}
       ) => {
         const sessionIds = {};
-        return normalizedCalls.map((call) => {
+        const calls = normalizedCalls.map((call) => {
           sessionIds[call.sessionId] = true;
           const fromNumber = call.from && (call.from.phoneNumber || call.from.extensionNumber);
           const toNumber = call.to && (call.to.phoneNumber || call.to.extensionNumber);
@@ -89,7 +89,11 @@ export default class CallHistory extends RcModule {
             activityMatches,
             toNumberEntity: matched,
           };
-        }).concat(endedCalls.filter(call => !sessionIds[call.sessionId]));
+        });
+        return [
+          ...endedCalls.filter(call => !sessionIds[call.sessionId]),
+          ...calls
+        ];
       },
     );
 
