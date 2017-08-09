@@ -100,10 +100,7 @@ export default class RecentMessages extends RcModule {
       type: this.actionTypes.initLoad
     });
     if (!currentContact) {
-      this.store.dispatch({
-        type: this.actionTypes.loadReset,
-        contact: currentContact
-      });
+      this.cleanUpMessages();
       return;
     }
     const messages = await this._getRecentMessages(

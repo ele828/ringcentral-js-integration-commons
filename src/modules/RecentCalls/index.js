@@ -68,10 +68,7 @@ export default class RecentCalls extends RcModule {
       type: this.actionTypes.initLoad
     });
     if (!currentContact) {
-      this.store.dispatch({
-        type: this.actionTypes.loadReset,
-        contact: currentContact
-      });
+      this.cleanUpCalls();
       return;
     }
     const calls = await this._getRecentCalls(
