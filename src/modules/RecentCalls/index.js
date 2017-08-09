@@ -58,19 +58,15 @@ export default class RecentCalls extends RcModule {
   @proxify
   async getCalls(currentContact) {
     // No need to calculate recent calls of the same contact repeatly
-    if (
-      !!currentContact &&
-      !!this.calls[currentContact.id]
-    ) {
+    if (!currentContact) {
+      return;
+    }
+    if (this.calls[currentContact.id]) {
       return;
     }
     this.store.dispatch({
       type: this.actionTypes.initLoad
     });
-    if (!currentContact) {
-      this.cleanUpCalls();
-      return;
-    }
     const calls = await this._getRecentCalls(
       currentContact,
       this._callHistory.calls

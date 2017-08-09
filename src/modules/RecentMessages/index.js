@@ -88,9 +88,11 @@ export default class RecentMessages extends RcModule {
   @proxify
   async getMessages(currentContact, forceUpdate = false) {
     // No need to calculate recent messages of the same contact repeatly
+    if (!currentContact) {
+      return;
+    }
     if (
       !forceUpdate &&
-      !!currentContact &&
       !!this.messages[currentContact.id]
     ) {
       return;
@@ -99,10 +101,6 @@ export default class RecentMessages extends RcModule {
     this.store.dispatch({
       type: this.actionTypes.initLoad
     });
-    if (!currentContact) {
-      this.cleanUpMessages();
-      return;
-    }
     const messages = await this._getRecentMessages(
       currentContact,
       this._messageStore.messages
