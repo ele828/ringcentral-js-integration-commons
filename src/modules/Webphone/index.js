@@ -809,6 +809,8 @@ export default class Webphone extends RcModule {
             message: callErrors[error.type]
           });
         });
+        session.isOnTransfer = false;
+        this._updateSessions();
         return;
       }
       const validPhoneNumber =
