@@ -224,11 +224,11 @@ export default class Call extends RcModule {
     const validatedResult
       = await this._numberValidate.validateNumbers(waitingValidateNumbers);
     if (!validatedResult.result) {
-      validatedResult.errors.forEach((error, phoneNumber) => {
+      validatedResult.errors.forEach((error) => {
         this._alert.warning({
           message: callErrors[error.type],
           payload: {
-            phoneNumber
+            phoneNumber: error.phoneNumber
           }
         });
       });

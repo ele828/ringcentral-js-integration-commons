@@ -604,11 +604,11 @@ export default class Webphone extends RcModule {
       const validatedResult
         = await this._numberValidate.validateNumbers([forwardNumber]);
       if (!validatedResult.result) {
-        validatedResult.errors.forEach((error, phoneNumber) => {
+        validatedResult.errors.forEach((error) => {
           this._alert.warning({
             message: callErrors[error.type],
             payload: {
-              phoneNumber
+              phoneNumber: error.phoneNumber
             }
           });
         });
@@ -807,11 +807,11 @@ export default class Webphone extends RcModule {
       const validatedResult
         = await this._numberValidate.validateNumbers([transferNumber]);
       if (!validatedResult.result) {
-        validatedResult.errors.forEach((error, phoneNumber) => {
+        validatedResult.errors.forEach((error) => {
           this._alert.warning({
             message: callErrors[error.type],
             payload: {
-              phoneNumber
+              phoneNumber: error.phoneNumber
             }
           });
         });
