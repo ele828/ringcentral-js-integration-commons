@@ -136,7 +136,7 @@ export default class DateTimeFormat extends RcModule {
   }
 
   get status() {
-    return this.proxyState.status || this.state.status;
+    return (this.proxyState && this.proxyState.status) || this.state.status;
   }
 
   get proxyStatus() {
