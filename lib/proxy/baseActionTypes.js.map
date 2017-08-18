@@ -1,0 +1,1 @@
+{"version":3,"sources":["lib/proxy/baseActionTypes.js"],"names":[],"mappings":";;;;;;AAAA;;;;;;kBAEe,mBAAS,CACtB,QADsB,EAEtB,WAFsB,EAGtB,MAHsB,EAItB,YAJsB,CAAT,EAKZ,OALY,C","file":"baseActionTypes.js","sourcesContent":["import Enum from '../Enum';\r\n\r\nexport default new Enum([\r\n  'action',\r\n  'execution',\r\n  'sync',\r\n  'initModule',\r\n], 'proxy');\r\n"]}

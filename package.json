@@ -1,19 +1,8 @@
 {
   "name": "ringcentral-integration",
-  "version": "0.1.0",
+  "version": "0.7.11",
   "description": "RingCentral Integration Common Javascript Core Library",
-  "main": "build/rc-phone.js",
-  "scripts": {
-    "test": "node ./node_modules/babel-cli/bin/babel-node.js ./node_modules/gulp/bin/gulp.js test",
-    "quick-test": "node ./node_modules/babel-cli/bin/babel-node.js ./node_modules/gulp/bin/gulp.js quick-test",
-    "eslint": "node ./node_modules/eslint/bin/eslint.js --quiet src --ignore-pattern *.test.js",
-    "dist": "node ./node_modules/babel-cli/bin/babel-node.js ./node_modules/gulp/bin/gulp.js dist",
-    "build": "node ./node_modules/babel-cli/bin/babel-node.js ./node_modules/gulp/bin/gulp.js build",
-    "gulp": "node ./node_modules/babel-cli/bin/babel-node.js ./node_modules/gulp/bin/gulp.js",
-    "release": "node ./node_modules/babel-cli/bin/babel-node.js ./node_modules/gulp/bin/gulp.js release",
-    "dev-server": "node ./node_modules/babel-cli/bin/babel-node.js ./node_modules/gulp/bin/gulp.js dev-server",
-    "karma": "karma start"
-  },
+  "main": "rc-phone.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ringcentral/ringcentral-js-integration-commons.git"
