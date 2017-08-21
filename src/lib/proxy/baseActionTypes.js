@@ -2,7 +2,7 @@ import Enum from '../Enum';
 
 export default new Enum([
   'action',
-  'execution',
+  'execute',
   'sync',
   'initModule',
 ], 'proxy');

@@ -1,4 +1,3 @@
-import uuid from 'uuid';
 import TransportBase from '../TransportBase';
 
 /* global chrome */
@@ -11,6 +10,14 @@ export default class ServerTransport extends TransportBase {
     });
     this._ports = new Set();
     this._requests = new Map();
+
+    // Keep active tabs up to date
+    this.activeTabs = [];
+    chrome.tabs.onActivated.addListener(() => {
+      chrome.tabs.query({ active: true }, (tabs) => {
+        this._activeTabs = tabs;
+      });
+    });
     chrome.runtime.onConnect.addListener((port) => {
       if (port.name === 'transport') {
         this._ports.add(port);
@@ -42,11 +49,13 @@ export default class ServerTransport extends TransportBase {
     }
   }
   push({ payload }) {
-    this._ports.forEach((port) => {
-      port.postMessage({
-        type: this._events.push,
-        payload,
-      });
-    });
+    const message = { type: this._events.push, payload };
+    const isOnActiveTabs = port =>
+      !!this._activeTabs.find(tab => tab.id === port.sender.tab.id);
+    // Since postMessage is really expensive,
+    // we only send messages to those ports on active tabs.
+    Array.from(this._ports)
+      .filter(port => isOnActiveTabs(port))
+      .forEach(port => port.postMessage(message));
   }
 }
