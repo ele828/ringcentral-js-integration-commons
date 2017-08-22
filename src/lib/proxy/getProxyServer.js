@@ -79,7 +79,7 @@ export default function getProxyServer(Target) {
               } else {
                 transport.response({
                   requestId,
-                  result: new Error('State is already up to date.'),
+                  error: 'State is already up to date.',
                 });
               }
               break;
