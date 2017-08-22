@@ -45,6 +45,7 @@ export default function getProxyServer(Target) {
             type,
             functionPath,
             args,
+            actionNumber
           },
         }) => {
           switch (type) {
@@ -69,12 +70,20 @@ export default function getProxyServer(Target) {
               }
             }
               break;
-            case this.actionTypes.sync:
-              transport.response({
-                requestId,
-                result: this.state,
-              });
+            case this.actionTypes.sync: {
+              if (actionNumber !== this.state.actionNumber) {
+                transport.response({
+                  requestId,
+                  result: this.state,
+                });
+              } else {
+                transport.response({
+                  requestId,
+                  result: new Error('State is already up to date.'),
+                });
+              }
               break;
+            }
             default:
               transport.response({
                 requestId,

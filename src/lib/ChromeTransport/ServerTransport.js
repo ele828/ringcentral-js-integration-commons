@@ -12,7 +12,7 @@ export default class ServerTransport extends TransportBase {
     this._requests = new Map();
 
     // Keep active tabs up to date
-    this.activeTabs = [];
+    this._activeTabs = [];
     chrome.tabs.onActivated.addListener(() => {
       chrome.tabs.query({ active: true }, (tabs) => {
         this._activeTabs = tabs;

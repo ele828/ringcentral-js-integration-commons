@@ -59,16 +59,20 @@ export default function getProxyClient(Target) {
 
 
     async _sync() {
-      const result = await this._transport.request({
-        payload: {
+      try {
+        const result = await this._transport.request({
+          payload: {
+            type: this.actionTypes.sync,
+            actionNumber: this.state.actionNumber
+          },
+        });
+        this.store.dispatch({
+          ...result,
           type: this.actionTypes.sync,
-        },
-      });
-      this.store.dispatch({
-        ...result,
-        type: this.actionTypes.sync,
-      });
-      this._syncPromise = null;
+        });
+      } finally {
+        this._syncPromise = null;
+      }
     }
     sync() {
       if (!this._syncPromise) {
@@ -110,6 +114,19 @@ export default function getProxyClient(Target) {
       });
       await this.sync();
       this._initialize(this._target);
+      this.onCurrentTabActivated(() => {
+        this.sync();
+      });
+    }
+
+    onCurrentTabActivated(callback) {
+      chrome.tabs.onActivated.addListener(() => {
+        chrome.tabs.getCurrent((currentTab) => {
+          if (currentTab && currentTab.active) {
+            callback.apply(this);
+          }
+        });
+      });
     }
   };
 }
