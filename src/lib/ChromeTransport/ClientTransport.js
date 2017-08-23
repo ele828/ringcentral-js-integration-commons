@@ -27,7 +27,7 @@ export default class ClientTransport extends TransportBase {
         case this._events.response:
           if (requestId && this._requests.has(requestId)) {
             if (error) {
-              this._requests.get(requestId).reject(error);
+              this._requests.get(requestId).reject(new Error(error));
             } else {
               this._requests.get(requestId).resolve(result);
             }

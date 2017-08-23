@@ -40,6 +40,9 @@ export default class ServerTransport extends TransportBase {
     const port = this._requests.get(requestId);
     if (port) {
       this._requests.delete(requestId);
+      if (error instanceof Error) {
+        error = error.message;
+      }
       port.postMessage({
         type: this._events.response,
         requestId,

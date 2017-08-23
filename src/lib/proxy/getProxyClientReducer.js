@@ -1,5 +1,4 @@
 import { combineReducers } from 'redux';
-import SyncStatus from './syncStatus';
 
 export function getLastActionReducer({ types }) {
   return (state = null, { type, action, lastAction }) => {
@@ -40,25 +39,11 @@ export function getTargetReducer({ targetReducer, types }) {
   };
 }
 
-export function getSyncStatusReducer({ types }) {
-  return (state = SyncStatus.synced, { type }) => {
-    switch (type) {
-      case types.initSync:
-        return SyncStatus.syncing;
-      case types.syncSuccess:
-        return SyncStatus.synced;
-      default:
-        return state;
-    }
-  };
-}
-
 export default function getProxyClientReducer({ targetReducer, proxyReducer, types }) {
   return combineReducers({
     target: getTargetReducer({ targetReducer, types }),
     proxy: proxyReducer,
     lastAction: getLastActionReducer({ types }),
     actionNumber: getActionNumberReducer({ types }),
-    syncStatus: getSyncStatusReducer({ types })
   });
 }

@@ -60,9 +60,6 @@ export default function getProxyClient(Target) {
 
     async _sync() {
       try {
-        this.store.dispatch({
-          type: this.actionTypes.initSync
-        });
         const result = await this._transport.request({
           payload: {
             type: this.actionTypes.sync,
@@ -75,9 +72,6 @@ export default function getProxyClient(Target) {
         });
       } catch (_) { /* Ignore */ }
       this._syncPromise = null;
-      this.store.dispatch({
-        type: this.actionTypes.syncSuccess
-      });
     }
     sync() {
       if (!this._syncPromise) {
