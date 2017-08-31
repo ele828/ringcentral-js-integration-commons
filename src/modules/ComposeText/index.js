@@ -124,7 +124,6 @@ export default class ComposeText extends RcModule {
     if (message) {
       this._alert.warning({
         message,
-        ttl: 0,
       });
       return true;
     }
