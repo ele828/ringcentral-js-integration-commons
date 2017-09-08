@@ -63,7 +63,7 @@ export default class RecentMessages extends RcModule {
       if (this._messageStore.updatedTimestamp !== this._prevMessageStoreTimestamp) {
         this._prevMessageStoreTimestamp = this._messageStore.updatedTimestamp;
         for (const contact of Object.values(this.contacts)) {
-          this.getMessages(contact, true);
+          this.getMessages(contact, false, true);
         }
       }
     }
@@ -86,7 +86,7 @@ export default class RecentMessages extends RcModule {
   }
 
   @proxify
-  async getMessages(currentContact, forceUpdate = false) {
+  async getMessages(currentContact, fromLocal = false, forceUpdate = false) {
     // No need to calculate recent messages of the same contact repeatly
     if (!currentContact) {
       return;
@@ -103,7 +103,8 @@ export default class RecentMessages extends RcModule {
     });
     const messages = await this._getRecentMessages(
       currentContact,
-      this._messageStore.messages
+      this._messageStore.messages,
+      fromLocal
     );
     this.store.dispatch({
       type: this.actionTypes.loadSuccess,
@@ -125,14 +126,15 @@ export default class RecentMessages extends RcModule {
 
   /**
    * Searching for recent messages of specific contact.
-   * @param {Object} currentContact Current contact
-   * @param {Array} messages Messages in messageStore
-   * @param {Number} daySpan Find messages within certain days
-   * @param {Number} length Maximum length of recent messages
+   * @param {Object} currentContact - Current contact
+   * @param {Array} messages - Messages in messageStore
+   * @param {Boolean} fromLocal - Only get recent messages locally
+   * @param {Number} daySpan - Find messages within certain days
+   * @param {Number} length - Maximum length of recent messages
    * @return {Array}
    * @private
    */
-  async _getRecentMessages(currentContact, messages = [], daySpan = 60, length = 5) {
+  async _getRecentMessages(currentContact, messages = [], fromLocal, daySpan = 60, length = 5) {
     const dateFrom = getDateFrom(daySpan);
     let recentMessages = this._getLocalRecentMessages(
       currentContact,
@@ -143,7 +145,7 @@ export default class RecentMessages extends RcModule {
 
     // If we could not find enough recent messages,
     // we need to search for messages on server.
-    if (recentMessages.length < length) {
+    if (!fromLocal && recentMessages.length < length) {
       const dateTo = recentMessages.length > 0
         ? recentMessages[recentMessages.length - 1].creationTime
         : undefined;
