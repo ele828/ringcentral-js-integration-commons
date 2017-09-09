@@ -1,10 +1,12 @@
 import { expect } from 'chai';
-import { Injector } from '../injector';
-import Module from '../decorators/module';
-import ModuleFactory from '../decorators/module_factory';
+import {
+  Injector,
+  Module,
+  ModuleFactory
+} from '../';
 
 describe('Module Decorator', () => {
-  it ('should work', () => {
+  it('should work', () => {
     @Module({
       deps: ['TestModule']
     })
@@ -18,9 +20,10 @@ describe('Module Decorator', () => {
       deps: ['Toy', 'GlobalConfig']
     })
     class TestModule {
-      constructor({ logger, appKey }) {
+      constructor({ logger, appKey, injector }) {
         console.log('-> Logger:', logger);
         console.log('-> appKey:', appKey);
+        console.log('-> Injector:', injector.get('Logger'));
       }
     }
 
@@ -48,9 +51,10 @@ describe('Module Decorator', () => {
         Toy,
         TestModule,
         { provide: 'GlobalConfig', useValue: { appKey: '123' }, spread: true },
-        { provide: 'Logger', useFactory: ({appKey}) => {
-          return { logger: true, appKey };
-        }, deps: [ 'GlobalConfig' ]},
+        { provide: 'Logger',
+          useFactory: ({ appKey }) => ({ logger: true, appKey }),
+          deps: ['GlobalConfig']
+        },
       ]
     })
     class EntryModule extends RootModule {

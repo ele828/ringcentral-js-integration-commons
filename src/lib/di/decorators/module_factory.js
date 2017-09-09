@@ -6,7 +6,6 @@ import { Injector } from '../injector';
  */
 export default function ModuleFactory (metadata) {
   return function (constructor) {
-    console.log('@ModuleFactory', constructor.name, metadata);
     Injector.registerModuleProvider(constructor, metadata);
   }
 }

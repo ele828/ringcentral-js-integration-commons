@@ -1,5 +1,7 @@
 export default class Container {
-  _map = new Map();
+  constructor() {
+    this._map = new Map();
+  }
 
   get(token) {
     if (!this._map.has(token)) {

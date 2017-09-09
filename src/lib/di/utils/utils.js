@@ -7,7 +7,7 @@ export function isAnonymousFunction(param) {
 }
 
 export function getParentClass(klass) {
-  return klass.__proto__;
+  return Object.getPrototypeOf(klass);
 }
 
 const STRING_CAMELIZE_REGEXP_1 = (/(\-|\_|\.|\s)+(.)?/g);

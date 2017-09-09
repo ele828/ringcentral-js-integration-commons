@@ -1,3 +1,4 @@
+import RcModule from '../RcModule';
 import Container from './container';
 import ModuleRegistry from './registry/module_registry';
 import ProviderRegistry from './registry/provider_registry';
@@ -40,7 +41,7 @@ export class UniversalFactoryProvider extends UniversalProvider {
     this.func = func;
     this.deps = deps || [];
   }
-} 
+}
 
 export class UniversalValueProvider extends UniversalProvider {
   constructor(token, value, spread) {
@@ -50,6 +51,7 @@ export class UniversalValueProvider extends UniversalProvider {
   }
 }
 
+// TODO: solve injector scope issue
 export class Injector {
   static container = new Container();
   static moduleRegistry = new ModuleRegistry();
@@ -62,7 +64,6 @@ export class Injector {
     if (applyMetadata) this.applyGlobalMetadata = applyMetadata;
   }
 
-  /** Switch to use an array as pending data structure */
   static resolveModuleProvider(provider, pending = new Set()) {
     const container = this.container;
     if (container.has(provider.token)) return;
@@ -80,14 +81,14 @@ export class Injector {
     } else if (provider instanceof UniversalClassProvider) {
       const moduleMetadata = this.moduleRegistry.get(provider.klass.name);
       const deps = moduleMetadata !== null ? moduleMetadata.deps : [];
-      const klass = provider.klass;
+      const Klass = provider.klass;
       if (!deps || deps.length === 0) {
-        container.set(provider.token, (new klass));
+        container.set(provider.token, new Klass());
         return;
       }
       pending.add(provider.token);
       const dependencies = this.resolveDependencies(deps, pending);
-      const instance = new klass(dependencies);
+      const instance = new Klass(dependencies);
       container.set(provider.token, instance);
       pending.delete(provider.token);
     }
@@ -102,33 +103,32 @@ export class Injector {
       if (pending.has(dep)) {
         // TODO: Extract to an error function
         const path = Array.from(pending.values()).join(' -> ');
-        throw new Error(`Circular dependency detected: ${path} -> ${dep}`)
+        throw new Error(`Circular dependency detected: ${path} -> ${dep}`);
       }
       if (!this.container.has(dep)) {
         const dependentModuleProvider = this.universalProviders.get(dep);
-        if (!dependentModuleProvider) throw new Error(`Module {${dep}} is not registered as a Provider`)
+        if (!dependentModuleProvider) throw new Error(`Module {${dep}} is not registered as a Provider`);
         this.resolveModuleProvider(dependentModuleProvider, pending);
       }
       const dependentModule = this.container.get(dep);
       // Value dependency and use spread, in this case, value object needs to be spreaded
       if (dependentModule.value !== undefined && dependentModule.spread) {
-        dependencies = { ...dependencies, ...dependentModule.value }
+        dependencies = { ...dependencies, ...dependentModule.value };
       } else {
         dependencies[camelize(dep)] = dependentModule;
       }
     }
+    // Injector instance will be injected into each module
+    dependencies[camelize(Injector.name)] = Injector;
     return dependencies;
   }
 
   // Entrypoint of the framework
-  static bootstrap(rootClass) {
-    const rootClassName = rootClass.name;
-    const rootClassMetadata = this.providerRegistry.get(rootClassName);
-
+  static bootstrap(RootClass) {
     // Combine providers of all ancestors modules
     let providerMetadata = [];
     for (
-      let currentClass = rootClass;
+      let currentClass = RootClass;
       !isEmpty(currentClass.name);
       currentClass = getParentClass(currentClass)
     ) {
@@ -170,8 +170,7 @@ export class Injector {
           provider.name,
           new UniversalClassProvider(provider.name, provider, null)
         );
-      } 
-      else {
+      } else {
         throw new Error('Invalid provider format');
       }
     }
@@ -192,14 +191,15 @@ export class Injector {
       return result;
     }, {});
 
-    const rootClassInstance = new rootClass(parameters);
+    const rootClassInstance = new RootClass(parameters);
 
     // Additional module configurations
     // eg. register reducer, inject getState
     const reducers = {};
-    
     for (const [name, module] of this.container.entries()) {
-      // module._getState = rootClassInstance.state[camelize(name)];
+      if (module instanceof RcModule) {
+        module._getState = rootClassInstance.state[camelize(name)];
+      }
     }
 
     // rootClassInstance._reducer = combineReducers({
@@ -212,7 +212,7 @@ export class Injector {
 
     return rootClassInstance;
   }
-  
+
   static registerModule(constructor, metadata) {
     if (!constructor || !isFunction(constructor)) {
       throw Errors.InvalidModuleTypeError;
@@ -261,5 +261,9 @@ export class Injector {
     // spread can only be used if useValue is an object.
     this.providerRegistry.set(moduleFactoryName, metadata.providers);
   }
- 
+
+  static get(moduleToken) {
+    return this.container.get(moduleToken);
+  }
+
 }

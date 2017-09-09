@@ -6,7 +6,6 @@ import { Injector } from '../injector';
  */
 export default function Module (metadata) {
   return function (constructor) {
-    console.log('@Module', constructor.name, metadata);
     Injector.registerModule(constructor, metadata);
   }
 }

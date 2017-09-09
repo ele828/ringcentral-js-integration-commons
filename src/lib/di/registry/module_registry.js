@@ -2,7 +2,9 @@
  * Module registry is used to store module metadata.
  */
 export default class ModuleRegistry {
-  _map = new Map();
+  constructor() {
+    this._map = new Map();
+  }
 
   get(module) {
     if (!this._map.has(module)) {
