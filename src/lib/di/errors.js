@@ -12,5 +12,5 @@ export function DIError(message) {
 
 export function CircularDependencyError(pending, dep) {
   const path = Array.from(pending.values()).join(' -> ');
-  return new Error(`Circular dependency detected: ${path} -> ${dep}`);
+  return DIError(`Circular dependency detected: ${path} -> ${dep}`);
 }

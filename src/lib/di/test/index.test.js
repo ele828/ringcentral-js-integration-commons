@@ -17,7 +17,7 @@ describe('Module Decorator', () => {
     }
 
     @Module({
-      deps: ['Toy', 'GlobalConfig']
+      deps: ['GlobalConfig']
     })
     class TestModule {
       constructor({ logger, appKey, injector }) {
@@ -48,13 +48,8 @@ describe('Module Decorator', () => {
 
     @ModuleFactory({
       providers: [
-        Toy,
         TestModule,
         { provide: 'GlobalConfig', useValue: { appKey: '123' }, spread: true },
-        { provide: 'Logger',
-          useFactory: ({ appKey }) => ({ logger: true, appKey }),
-          deps: ['GlobalConfig']
-        },
       ]
     })
     class EntryModule extends RootModule {

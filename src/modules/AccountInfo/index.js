@@ -1,5 +1,6 @@
 import mask from 'json-mask';
 import DataFetcher from '../../lib/DataFetcher';
+import { Module } from '../../lib/DependencyInjection';
 
 const DEFAULT_MASK = [
   'id,mainNumber,status',
@@ -14,6 +15,9 @@ const DEFAULT_MASK = [
   ].join(',')})`,
 ].join(',');
 
+@Module({
+  deps: ['Client']
+})
 export default class AccountInfo extends DataFetcher {
   constructor({
     client,

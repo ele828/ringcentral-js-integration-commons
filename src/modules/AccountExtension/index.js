@@ -13,10 +13,14 @@ import {
 } from './accountExtensionHelper';
 import subscriptionFilters from '../../enums/subscriptionFilters';
 import proxify from '../../lib/proxy/proxify';
+import { Module } from '../../lib/di';
 
 const extensionRegExp = /.*\/extension$/;
 const DEFAULT_TTL = 24 * 60 * 60 * 1000;
 
+@Module({
+  deps: ['Client', 'Auth', 'Storage', 'Subscription']
+})
 export default class AccountExtension extends DataFetcher {
   constructor({
     client,

@@ -5,11 +5,15 @@ import actionTypes from './actionTypes';
 import alertLevels from './alertLevels';
 import getAlertReducer from './getAlertReducer';
 import proxify from '../../lib/proxy/proxify';
+import { Module } from '../../lib/di';
 
 /**
  * @class
  * @description Alert messages managing module.
  */
+@Module({
+  deps: ['AlertOptions']
+})
 export default class Alert extends RcModule {
   /**
    * @constructor

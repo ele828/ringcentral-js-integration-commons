@@ -3,12 +3,14 @@ import sleep from '../../lib/sleep';
 import syncTypes from '../../enums/syncTypes';
 import actionTypes from './actionTypes';
 import proxify from '../../lib/proxy/proxify';
+import { Module } from '../../lib/di';
 
 import getAddressBookReducer, {
   getSyncTokenReducer,
   getContactListReducer,
   getSyncTimestampReducer,
 } from './getAddressBookReducer';
+
 
 const CONTACTS_PER_PAGE = 250;
 const DEFAULT_TTL = 30 * 60 * 1000;
@@ -30,6 +32,9 @@ function getSyncParams(syncToken, pageId) {
   return query;
 }
 
+@Module({
+  deps: ['Auth', 'Client', 'Storage']
+})
 export default class AddressBook extends Pollable {
   constructor({
     client,

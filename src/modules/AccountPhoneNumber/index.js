@@ -2,11 +2,15 @@ import 'core-js/fn/array/find';
 import fetchList from '../../lib/fetchList';
 import DataFetcher from '../../lib/DataFetcher';
 import removeUri from '../../lib/removeUri';
+import { Module } from '../../lib/di';
 
 function simplifyPhoneNumber(number) {
   return removeUri(number);
 }
 
+@Module({
+  deps: ['Client', 'Auth', 'Storage', 'TabManager']
+})
 export default class AccountPhoneNumber extends DataFetcher {
   constructor({
     client,

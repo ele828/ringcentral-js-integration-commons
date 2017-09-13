@@ -58,6 +58,7 @@ import Analytics from '../src/modules/Analytics';
 import config from './config';
 
 
+@ModuleFactory()
 export default class Phone extends RcModule {
   constructor({
     useTabManager = true,
