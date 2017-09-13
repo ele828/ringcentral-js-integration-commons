@@ -113,19 +113,6 @@ export default function getProxyClient(Target) {
       });
       await this.sync();
       this._initialize(this._target);
-      this.onCurrentTabActivated(() => {
-        this.sync();
-      });
-    }
-
-    onCurrentTabActivated(callback) {
-      chrome.tabs.onActivated.addListener(() => {
-        chrome.tabs.getCurrent((currentTab) => {
-          if (currentTab && currentTab.active) {
-            callback.apply(this);
-          }
-        });
-      });
     }
   };
 }
