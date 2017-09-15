@@ -1,14 +1,12 @@
+import { combineReducers } from 'redux';
+
 import RcModule from '../RcModule';
 import Container from './container';
 import ModuleRegistry from './registry/module_registry';
 import ProviderRegistry from './registry/provider_registry';
 import * as Errors from './errors';
-import {
-  isEmpty,
-  isAnonymousFunction,
-  getParentClass,
-  camelize
-} from './utils/utils';
+import { ValueProvider, ClassProvider, FactoryProvider } from './provider';
+import { isEmpty, isAnonymousFunction, getParentClass, camelize } from './utils/utils';
 import {
   isFunction,
   isObject,
@@ -17,68 +15,29 @@ import {
   isStaticClassProvider,
   isExistingProvider,
   isFactoryProvider,
-  isConstructorProvider,
-  isClassProvider
 } from './utils/is_type';
 
-export class UniversalProvider {
-  constructor(token) {
-    this.token = token;
-  }
-}
-
-export class UniversalClassProvider extends UniversalProvider {
-  constructor(token, klass, deps) {
-    super(token);
-    this.klass = klass;
-    this.deps = deps;
-  }
-}
-
-export class UniversalFactoryProvider extends UniversalProvider {
-  constructor(token, func, deps) {
-    super(token);
-    this.func = func;
-    this.deps = deps || [];
-  }
-}
-
-export class UniversalValueProvider extends UniversalProvider {
-  constructor(token, value, spread) {
-    super(token);
-    this.value = value;
-    this.spread = spread;
-  }
-}
-
-// TODO: solve injector scope issue
 export class Injector {
   static container = new Container();
   static moduleRegistry = new ModuleRegistry();
   static providerRegistry = new ProviderRegistry();
   static universalProviders = new Map();
 
-  static applyGlobalMetadata = null;
-
-  static config({ applyMetadata }) {
-    if (applyMetadata) this.applyGlobalMetadata = applyMetadata;
-  }
-
   static resolveModuleProvider(provider, pending = new Set()) {
     const container = this.container;
     if (container.has(provider.token)) return;
-    if (provider instanceof UniversalValueProvider) {
+    if (provider instanceof ValueProvider) {
       const value = provider.spread
         ? { value: provider.value, spread: provider.spread }
         : provider.value;
       container.set(provider.token, value);
-    } else if (provider instanceof UniversalFactoryProvider) {
+    } else if (provider instanceof FactoryProvider) {
       pending.add(provider.token);
       const dependencies = this.resolveDependencies(provider.deps, pending);
       const factoryProvider = provider.func.call(null, dependencies);
       container.set(provider.token, factoryProvider);
       pending.delete(provider.token);
-    } else if (provider instanceof UniversalClassProvider) {
+    } else if (provider instanceof ClassProvider) {
       const moduleMetadata = this.moduleRegistry.get(provider.klass.name);
       const deps = moduleMetadata !== null ? moduleMetadata.deps : [];
       const Klass = provider.klass;
@@ -95,7 +54,7 @@ export class Injector {
   }
 
   static resolveDependencies(deps, pending) {
-    let dependencies = {};
+    const dependencies = {};
     for (let dep of deps) {
       if (isFunction(dep)) {
         dep = dep.name;
@@ -113,7 +72,7 @@ export class Injector {
       const dependentModule = this.container.get(dep);
       // Value dependency and use spread, in this case, value object needs to be spreaded
       if (dependentModule.value !== undefined && dependentModule.spread) {
-        dependencies = { ...dependencies, ...dependentModule.value };
+        Object.assign(dependencies, dependentModule.value);
       } else {
         dependencies[camelize(dep)] = dependentModule;
       }
@@ -143,35 +102,25 @@ export class Injector {
       if (isValueProvider(provider)) {
         universalProviders.set(
           provider.provide,
-          new UniversalValueProvider(provider.provide, provider.useValue, provider.spread)
+          new ValueProvider(provider.provide, provider.useValue, provider.spread)
         );
       } else if (isStaticClassProvider(provider)) {
         universalProviders.set(
           provider.provide,
-          new UniversalClassProvider(provider.provide, provider.useClass, provider.deps)
+          new ClassProvider(provider.provide, provider.useClass, provider.deps)
         );
       } else if (isExistingProvider(provider)) {
         universalProviders.set(
           provider.provide,
-          new UniversalClassProvider(provider.provide, provider.useExisting, null)
+          new ClassProvider(provider.provide, provider.useExisting, null)
         );
       } else if (isFactoryProvider(provider)) {
         universalProviders.set(
           provider.provide,
-          new UniversalFactoryProvider(provider.provide, provider.useFactory, provider.deps)
-        );
-      } else if (isConstructorProvider(provider)) {
-        universalProviders.set(
-          provider.provide.name,
-          new UniversalClassProvider(provider.provide.name, provider.provide, provider.deps)
-        );
-      } else if (isClassProvider(provider)) {
-        universalProviders.set(
-          provider.name,
-          new UniversalClassProvider(provider.name, provider, null)
+          new FactoryProvider(provider.provide, provider.useFactory, provider.deps)
         );
       } else {
-        throw new Error('Invalid provider format');
+        throw new Error('Invalid provider found');
       }
     }
 
@@ -185,30 +134,60 @@ export class Injector {
       }
     }
 
-    // Instantiate root module
-    const parameters = Array.from(this.container.entries()).reduce((result, entries) => {
-      result[camelize(entries[0])] = entries[1];
-      return result;
-    }, {});
-
-    const rootClassInstance = new RootClass(parameters);
-
-    // Additional module configurations
-    // eg. register reducer, inject getState
-    const reducers = {};
+    const moduleProviders = {};
     for (const [name, module] of this.container.entries()) {
+      moduleProviders[name] = module;
+    }
+
+    // Instantiate root module
+    const reducers = {};
+    const proxyReducers = {};
+    const rootClassInstance = new RootClass(moduleProviders);
+
+    // Register all module providers to root instance
+    for (const name of Object.keys(moduleProviders)) {
+      const module = moduleProviders[name];
+      rootClassInstance.addModule(name, module);
+
+      if (module.reducer) {
+        reducers[name] = module.reducer;
+      }
+
+      if (module.proxyReducer) {
+        proxyReducers[name] = module.proxyReducer;
+      }
+
+      // Additional module configurations
+      // Do things like reducer registration, getState injection
       if (module instanceof RcModule) {
-        module._getState = rootClassInstance.state[camelize(name)];
+        if (module._reducer) {
+          Object.defineProperty(module, '_getState', {
+            value: rootClassInstance.state[name]
+          });
+        }
+        if (module._proxyReducer) {
+          Object.defineProperty(module, '_getProxyState', {
+            value: rootClassInstance.state[name]
+          });
+        }
       }
     }
 
-    // rootClassInstance._reducer = combineReducers({
-    //   ...reducers,
-    //   lastAction: (state = null, action) => {
-    //     console.log(action);
-    //     return action;
-    //   }
-    // });
+    Object.defineProperty(rootClassInstance, '_reducer', {
+      value: combineReducers({
+        ...reducers,
+        lastAction: (state = null, action) => {
+          console.log(action);
+          return action;
+        }
+      })
+    });
+
+    Object.defineProperty(rootClassInstance, '_reducer', {
+      value: combineReducers({
+        ...proxyReducers,
+      })
+    });
 
     return rootClassInstance;
   }

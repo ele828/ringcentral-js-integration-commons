@@ -2,12 +2,12 @@ export function isObject(x) {
   return typeof x === 'object';
 }
 
-export function isFunction (x) {
+export function isFunction(x) {
   return typeof x === 'function';
 }
 
-export function isArray (x) {
-  return !!Array.isArray
+export function isArray(x) {
+  return Array.isArray
     ? Array.isArray(x)
     : Object.prototype.toString.call(x).slice(8, -1) === 'Array';
 }
