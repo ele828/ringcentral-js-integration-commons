@@ -56,9 +56,14 @@ export class Injector {
   static resolveDependencies(deps, pending) {
     const dependencies = {};
     for (let dep of deps) {
-      if (isFunction(dep)) {
-        dep = dep.name;
+      let isOptional = false;
+
+      // Support nested object dependency declaration
+      if (isObject(dep)) {
+        dep = dep.dep;
+        isOptional = dep.optional;
       }
+
       if (pending.has(dep)) {
         // TODO: Extract to an error function
         const path = Array.from(pending.values()).join(' -> ');
@@ -66,10 +71,16 @@ export class Injector {
       }
       if (!this.container.has(dep)) {
         const dependentModuleProvider = this.universalProviders.get(dep);
-        if (!dependentModuleProvider) throw new Error(`Module {${dep}} is not registered as a Provider`);
+        if (!isOptional && !dependentModuleProvider) {
+          throw new Error(`Module [${dep}] is not registered as a Provider`);
+        }
         this.resolveModuleProvider(dependentModuleProvider, pending);
       }
       const dependentModule = this.container.get(dep);
+      if (!isOptional && !dependentModule) {
+        throw new Error(`Module [${dep}] can not be resolved`);
+      }
+
       // Value dependency and use spread, in this case, value object needs to be spreaded
       if (dependentModule.value !== undefined && dependentModule.spread) {
         Object.assign(dependencies, dependentModule.value);
@@ -82,18 +93,43 @@ export class Injector {
     return dependencies;
   }
 
-  // Entrypoint of the framework
-  static bootstrap(RootClass) {
-    // Combine providers of all ancestors modules
+  /**
+   * Process the inheritance relationship of ModuleFactory.
+   * Support some inheritance options such as overwrite, merge, etc.
+   * ModuleFactory can only inherit from ModuleFactory.
+   *
+   * @param {Function|Class} rootClass - base module factory
+   * @return {Array} - provider metadata
+   */
+  static processModuleFactoryInheritance(rootClass) {
     let providerMetadata = [];
     for (
-      let currentClass = RootClass;
+      let currentClass = rootClass;
       !isEmpty(currentClass.name);
       currentClass = getParentClass(currentClass)
     ) {
       const currentProviderMetadata = this.providerRegistry.get(currentClass.name);
+      // Class and Factory providers will be overwritten by child class by default
       providerMetadata = [...currentProviderMetadata, ...providerMetadata];
     }
+    return providerMetadata;
+  }
+
+  /**
+   * Process the inheritance relationship of Module and Library.
+   * Module can inherit from Module and Library.
+   */
+  static processModuleLibraryInheritance() {
+
+  }
+
+  // Entrypoint of the framework
+  static bootstrap(RootClass) {
+    // Implement inheritance for ModuleFactory
+    const providerMetadata = this.processModuleFactoryInheritance(RootClass);
+
+    // Implement inheritance for Module and Library
+    // Will modify the metadata of child module or library directly
 
     // Iterate through all provider metadata
     // Discard providers in parent class overwritten by children
