@@ -1,5 +1,9 @@
 import RcModule from './RcModule';
+import { Library } from './di';
 
+@Library({
+  deps: [{ dep: 'PollableOptions', optional: true }]
+})
 export default class Pollable extends RcModule {
   constructor({
     ...options

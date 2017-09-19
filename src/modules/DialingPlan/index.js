@@ -1,3 +1,4 @@
+import { Module } from '../../lib/di';
 import fetchList from '../../lib/fetchList';
 import DataFetcher from '../../lib/DataFetcher';
 import moduleStatuses from '../../enums/moduleStatuses';
@@ -6,6 +7,9 @@ import moduleStatuses from '../../enums/moduleStatuses';
  * @class
  * @description Dial plan list managing module
  */
+@Module({
+  deps: ['Client', { dep: 'DialingPlanOptions', optional: true }]
+})
 export default class DialingPlan extends DataFetcher {
   /**
    * @constructor

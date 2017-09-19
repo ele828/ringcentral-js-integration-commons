@@ -1,3 +1,4 @@
+import { Module } from '../../lib/di';
 import Pollable from '../../lib/Pollable';
 import moduleStatuses from '../../enums/moduleStatuses';
 
@@ -28,6 +29,12 @@ const DEFAULT_DAY_SPAN = 7;
  * @class
  * @description Messages data manageing module
  */
+@Module({
+  deps: [
+    'Alert', 'Client', 'Auth', 'Storage', 'Subscription', 'ConnectivityMonitor',
+    { dep: 'MessageStoreOptions', optional: true }
+  ]
+})
 export default class MessageStore extends Pollable {
   /**
    * @constructor

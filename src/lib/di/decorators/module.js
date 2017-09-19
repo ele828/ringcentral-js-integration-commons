@@ -1,4 +1,4 @@
-import { Injector } from '../injector';
+import Registry from '../registry/registry';
 
 /**
  * @Module() decorator
@@ -7,6 +7,7 @@ import { Injector } from '../injector';
 export default function Module(metadata) {
   /* eslint-disable */
   return function (constructor) {
-    Injector.registerModule(constructor, metadata);
+    Registry.registerModule(constructor, metadata);
+    return constructor;
   };
 }

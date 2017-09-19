@@ -1,4 +1,5 @@
 import 'core-js/fn/array/find';
+import { Module } from '../../lib/di';
 import fetchList from '../../lib/fetchList';
 import DataFetcher from '../../lib/DataFetcher';
 
@@ -6,6 +7,9 @@ import DataFetcher from '../../lib/DataFetcher';
  * @class
  * @description Extension phone number list module
  */
+@Module({
+  deps: ['Client', { dep: 'ExtensionPhoneNumberOptions', optional: true }]
+})
 export default class ExtensionPhoneNumber extends DataFetcher {
   /**
    * @constructor

@@ -1,3 +1,4 @@
+import { Module } from '../../lib/di';
 import Pollable from '../../lib/Pollable';
 import fetchList from '../../lib/fetchList';
 import moduleStatuses from '../../enums/moduleStatuses';
@@ -53,6 +54,16 @@ const presenceRegExp = /\/presence\?detailedTelephonyState=true/;
  * @class
  * @description Call log managing module
  */
+@Module({
+  deps: [
+    'Auth',
+    'Client',
+    'Storage',
+    'Subscription',
+    'RolesAndPermissions',
+    { dep: 'CallLogOptions', optional: true }
+  ]
+})
 export default class CallLog extends Pollable {
   /**
    * @constructor

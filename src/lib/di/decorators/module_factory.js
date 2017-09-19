@@ -1,4 +1,4 @@
-import { Injector } from '../injector';
+import Registry from '../registry/registry';
 
 /**
  * @ModuleFactory() decorator
@@ -8,6 +8,7 @@ import { Injector } from '../injector';
 export default function ModuleFactory(metadata) {
   /* eslint-disable */
   return function (constructor) {
-    Injector.registerModuleProvider(constructor, metadata);
+    Registry.registerModuleProvider(constructor, metadata);
+    return constructor;
   };
 }

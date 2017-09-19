@@ -1,4 +1,5 @@
 import RcModule from '../../lib/RcModule';
+import { Module } from '../../lib/di';
 import moduleStatuses from '../../enums/moduleStatuses';
 import actionTypes from './actionTypes';
 import getAnalyticsReducer from './getAnalyticsReducer';
@@ -10,6 +11,19 @@ import callingModes from '../CallingSettings/callingModes';
  * @class
  * @description Analytics module.
  */
+@Module({
+  deps: [
+    'Auth',
+    'Call',
+    'Webphone',
+    'Contacts',
+    'MessageSender',
+    'Router',
+    { dep: 'Router', optional: true },
+    { dep: 'AnalyticsAdapter', optional: true },
+    { dep: 'AnalyticsOptions', optional: true }
+  ]
+})
 export default class Analytics extends RcModule {
   constructor({
     auth,

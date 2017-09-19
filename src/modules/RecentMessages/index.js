@@ -1,6 +1,7 @@
 import proxify from '../../lib/proxy/proxify';
 import ensureExist from '../../lib/ensureExist';
 import RcModule from '../../lib/RcModule';
+import { Module } from '../../lib/di';
 import actionTypes from './actionTypes';
 import messageStatus from './messageStatus';
 import getRecentMessagesReducer from './getRecentMessagesReducer';
@@ -11,6 +12,9 @@ import concurrentExecute from '../../lib/concurrentExecute';
  * @class
  * @description Retrieve all recent messages related to a specified contact.
  */
+@Module({
+  deps: ['Client', 'MessageStore']
+})
 export default class RecentMessages extends RcModule {
   /**
    * @constructor

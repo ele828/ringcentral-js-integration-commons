@@ -1,4 +1,5 @@
 import RcModule from '../../lib/RcModule';
+import { Module } from '../../lib/di';
 import moduleStatuses from '../../enums/moduleStatuses';
 import {
   sortByStartTime,
@@ -12,6 +13,16 @@ import normalizeNumber from '../../lib/normalizeNumber';
  * @class
  * @description Call history managing module
  */
+@Module({
+  deps: [
+    'AccountInfo',
+    'CallLog',
+    'CallMonitor',
+    'ActivityMatcher',
+    'ContactMatcher',
+    { dep: 'CallHistoryOptions', optional: true }
+  ]
+})
 export default class CallHistory extends RcModule {
   /**
    * @constructor

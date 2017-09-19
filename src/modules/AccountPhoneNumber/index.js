@@ -1,4 +1,5 @@
 import 'core-js/fn/array/find';
+import { Module } from '../../lib/di';
 import fetchList from '../../lib/fetchList';
 import DataFetcher from '../../lib/DataFetcher';
 import removeUri from '../../lib/removeUri';
@@ -11,6 +12,12 @@ function simplifyPhoneNumber(number) {
  * @class
  * @description Accound phone number module to get account phone number list
  */
+@Module({
+  deps: [
+    'Client',
+    { dep: 'AccountPhoneNumberOptions', optional: true }
+  ]
+})
 export default class AccountPhoneNumber extends DataFetcher {
   /**
    * @constructor

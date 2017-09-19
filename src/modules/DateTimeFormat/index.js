@@ -1,4 +1,5 @@
 import RcModule from '../../lib/RcModule';
+import { Module } from '../../lib/di';
 import ensureExist from '../../lib/ensureExist';
 import getIntlDateTimeFormatter from '../../lib/getIntlDateTimeFormatter';
 import actionTypes from './actionTypes';
@@ -9,6 +10,9 @@ import getProxyReducer from './getProxyReducer';
  * @class DateTimeFormat
  * @description Simple date and time formatting manager.
  */
+@Module({
+  deps: ['Locale', { dep: 'DateTimeFormatOptions', optional: true }]
+})
 export default class DateTimeFormat extends RcModule {
   /**
    * @constructor

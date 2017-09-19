@@ -1,4 +1,5 @@
 import 'core-js/fn/array/find';
+import { Module } from '../../lib/di';
 import DataFetcher from '../../lib/DataFetcher';
 import fetchList from '../../lib/fetchList';
 
@@ -21,6 +22,12 @@ const DEFAULT_TTL = 24 * 60 * 60 * 1000;
  * @class
  * @description Accound extension list managing module
  */
+@Module({
+  deps: [
+    'Client',
+    { dep: 'AccountExtensionOptions', optional: true }
+  ]
+})
 export default class AccountExtension extends DataFetcher {
   /**
    * @constructor

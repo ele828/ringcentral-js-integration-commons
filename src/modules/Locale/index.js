@@ -1,6 +1,7 @@
 import formatMessage from 'format-message';
 import RcModule from '../../lib/RcModule';
 import proxify from '../../lib/proxy/proxify';
+import { Module } from '../../lib/di';
 
 import I18n, {
   DEFAULT_LOCALE,
@@ -49,6 +50,9 @@ function checkIntl() {
  * @class
  * @description Locale managing module
  */
+@Module({
+  deps: [{ dep: 'LocaleOptions', optional: true }]
+})
 export default class Locale extends RcModule {
   /**
    * @constructor

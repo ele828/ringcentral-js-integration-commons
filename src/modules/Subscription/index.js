@@ -1,4 +1,5 @@
 import RcModule from '../../lib/RcModule';
+import { Module } from '../../lib/di';
 import sleep from '../../lib/sleep';
 import loginStatus from '../Auth/loginStatus';
 import moduleStatuses from '../../enums/moduleStatuses';
@@ -14,6 +15,11 @@ const DEFAULT_TIME_TO_RETRY = 60 * 1000;
  * @class
  * @description Subscription module to subscibe notification
  */
+@Module({
+  deps: [
+    'Auth', 'Client', 'Storage', { dep: 'SubscriptionOptions', optional: true }
+  ]
+})
 export default class Subscription extends RcModule {
   /**
    * @constructor

@@ -1,3 +1,4 @@
+import { Module } from '../../lib/di';
 import RcModule from '../../lib/RcModule';
 import isBlank from '../../lib/isBlank';
 import moduleStatuses from '../../enums/moduleStatuses';
@@ -12,6 +13,17 @@ import proxify from '../../lib/proxy/proxify';
  * @class
  * @description Compose text managing module
  */
+@Module({
+  deps: [
+    'Alert',
+    'Auth',
+    'Storage',
+    'MessageSender',
+    'NumberValidate',
+    'ContactSearch',
+    { dep: 'ComposeTextOptions', optional: true }
+  ]
+})
 export default class ComposeText extends RcModule {
   /**
    * @constructor

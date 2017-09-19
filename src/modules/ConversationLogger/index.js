@@ -1,3 +1,4 @@
+import { Module } from '../../lib/di';
 import LoggerBase from '../../lib/LoggerBase';
 import ensureExist from '../../lib/ensureExist';
 import actionTypes from './actionTypes';
@@ -19,6 +20,20 @@ export function conversationLogIdentityFunction(conversation) {
  * @class
  * @description Conversation logger module
  */
+@Module({
+  deps: [
+    'Auth',
+    'Storage',
+    'TabManager',
+    'ContactMatcher',
+    'ConversationMatcher',
+    'DateTimeFormat',
+    'ExtensionInfo',
+    'MessageStore',
+    'RolesAndPermissions',
+    { dep: 'ConversationLoggerOptions', optional: false }
+  ]
+})
 export default class ConversationLogger extends LoggerBase {
   /**
    * @constructor

@@ -1,4 +1,5 @@
 import RcModule from '../RcModule';
+import { Library } from '../di';
 import { prefixEnum } from '../Enum';
 import ensureExist from '../ensureExist';
 
@@ -35,6 +36,9 @@ export function convertListToMap(loggingList) {
  * @class
  * @description Base class implementation for loggers.
  */
+@Library({
+  deps: [{ dep: 'LoggerBaseOptions', optional: true }]
+})
 export default class LoggerBase extends RcModule {
   /**
    * @constructor

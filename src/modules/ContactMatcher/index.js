@@ -1,3 +1,4 @@
+import { Module } from '../../lib/di';
 import DataMatcher from '../../lib/DataMatcher';
 import proxify from '../../lib/proxy/proxify';
 
@@ -5,6 +6,9 @@ import proxify from '../../lib/proxy/proxify';
  * @class
  * @description Contact matcher managing module
  */
+@Module({
+  deps: [{ dep: 'ContactMatcherOptions', optional: true }]
+})
 export default class ContactMatcher extends DataMatcher {
   /**
    * @constructor
