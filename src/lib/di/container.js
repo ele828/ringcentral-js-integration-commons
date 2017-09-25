@@ -1,27 +1,51 @@
+import { DIError } from './utils/utils';
+
 export default class Container {
   constructor() {
+    this.parent = null;
     this._map = new Map();
   }
 
+  has(token) {
+    if (this._map.has(token)) return true;
+    else if (this.parent !== null) return this.parent.has(token);
+    return false;
+  }
+
   get(token) {
-    if (!this._map.has(token)) {
-      throw new Error(`Can not find token {${token}} in Container`);
-    }
-    return this._map.get(token);
+    if (this._map.has(token)) return this._map.get(token);
+    else if (this.parent !== null) return this.parent.get(token);
+    throw DIError(`Cannot find provider [${token}] in Container`);
   }
 
   set(token, metadata) {
     if (this._map.has(token)) {
-      throw new Error(`Can not save duplicated token {${token}} to Container`);
+      throw DIError(`Cannot store duplicated provider instance [${token}] to Container`);
     }
     return this._map.set(token, metadata);
   }
 
-  has(token) {
+  nativeHas(token) {
     return this._map.has(token);
+  }
+
+  nativeGet(token) {
+    return this._map.get(token);
+  }
+
+  setParent(parent) {
+    this.parent = parent;
   }
 
   entries() {
     return this._map.entries();
+  }
+
+  values() {
+    return this._map.values();
+  }
+
+  reset() {
+    this._map.clear();
   }
 }

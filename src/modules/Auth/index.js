@@ -1,6 +1,7 @@
 import url from 'url';
 import qs from 'qs';
 import RcModule from '../../lib/RcModule';
+import { Module } from '../../lib/di';
 import getAuthReducer from './getAuthReducer';
 import actionTypes from './actionTypes';
 import loginStatus from './loginStatus';
@@ -30,6 +31,17 @@ function getDefaultProxyUri() {
  * @class
  * @description Authentication module
  */
+@Module({
+  deps: [
+    'Client',
+    'Alert',
+    'Brand',
+    'Locale',
+    'TabManager',
+    'Environment',
+    { dep: 'AuthOptions', optional: true }
+  ]
+})
 export default class Auth extends RcModule {
   /**
    * @constructor

@@ -521,7 +521,7 @@ export default class Phone extends RcModule {
     this._reducer = combineReducers({
       ...reducers,
       lastAction: (state = null, action) => {
-        console.log(action);
+        // console.log(action);
         return action;
       },
     });

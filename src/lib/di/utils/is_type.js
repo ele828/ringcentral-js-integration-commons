@@ -1,15 +1,19 @@
-export function isObject(x) {
-  return typeof x === 'object';
-}
-
-export function isFunction(x) {
-  return typeof x === 'function';
+export function isEmpty(param) {
+  return !param || param.length === 0;
 }
 
 export function isArray(x) {
   return Array.isArray
     ? Array.isArray(x)
     : Object.prototype.toString.call(x).slice(8, -1) === 'Array';
+}
+
+export function isObject(x) {
+  return typeof x === 'object' && !isArray(x);
+}
+
+export function isFunction(x) {
+  return typeof x === 'function';
 }
 
 /**
@@ -30,12 +34,4 @@ export function isExistingProvider(provider) {
 
 export function isFactoryProvider(provider) {
   return provider.useFactory !== undefined;
-}
-
-export function isConstructorProvider(provider) {
-  return provider.provide !== undefined;
-}
-
-export function isClassProvider(provider) {
-  return isFunction(provider);
 }

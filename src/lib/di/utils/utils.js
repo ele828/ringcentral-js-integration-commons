@@ -1,11 +1,3 @@
-export function isEmpty(param) {
-  return !param || param.length === 0;
-}
-
-export function isAnonymousFunction(param) {
-  return param && param === 'Function';
-}
-
 export function getParentClass(klass) {
   return Object.getPrototypeOf(klass);
 }

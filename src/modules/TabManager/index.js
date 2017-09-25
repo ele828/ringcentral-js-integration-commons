@@ -1,4 +1,5 @@
 import RcModule from '../../lib/RcModule';
+import { Module } from '../../lib/di';
 import Tabbie from '../../lib/Tabbie';
 import moduleStatuses from '../../enums/moduleStatuses';
 import actionTypes from './actionTypes';
@@ -8,6 +9,7 @@ import getTabManagerReducer from './getTabManagerReducer';
  * @class
  * @description To handle data between different tabs
  */
+@Module()
 export default class TabManager extends RcModule {
   constructor({
     ...options

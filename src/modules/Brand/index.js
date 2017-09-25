@@ -1,10 +1,14 @@
 import RcModule from '../../lib/RcModule';
+import { Module } from '../../lib/di';
 import moduleStatuses from '../../enums/moduleStatuses';
 
 /**
  * @class
  * @description Brand managing module
  */
+@Module({
+  deps: [{ dep: 'BrandOptions', optional: true }]
+})
 export default class Brand extends RcModule {
   /**
    * @constructor

@@ -1,4 +1,5 @@
 import { createSelector } from 'reselect';
+import { Injector } from '../di';
 import { prefixEnum } from '../Enum';
 import moduleStatuses from '../../enums/moduleStatuses';
 import proxyStatuses from '../../enums/proxyStatuses';
@@ -222,6 +223,10 @@ export default class RcModule {
         this[subModule]._initModule();
       }
     }
+  }
+
+  static create() {
+    return Injector.bootstrap(this);
   }
 
   get status() {

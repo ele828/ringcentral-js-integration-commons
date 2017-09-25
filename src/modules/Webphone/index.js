@@ -2,6 +2,7 @@ import RingCentralWebphone from 'ringcentral-web-phone';
 import incomingAudio from 'ringcentral-web-phone/audio/incoming.ogg';
 import outgoingAudio from 'ringcentral-web-phone/audio/outgoing.ogg';
 
+import { Module } from '../../lib/di';
 import RcModule from '../../lib/RcModule';
 import sleep from '../../lib/sleep';
 import moduleStatuses from '../../enums/moduleStatuses';
@@ -32,6 +33,20 @@ const MAX_RETRIES_DELAY = 2 * 60 * 1000;
  * @constructor
  * @description Web phone module to handle phone interaction with WebRTC.
  */
+@Module({
+  deps: [
+    'Auth',
+    'Alert',
+    'Client',
+    'Storage',
+    'GlobalStorage',
+    'ContactMatcher',
+    'ExtensionDevice',
+    'NumberValidate',
+    'RolesAndPermissions',
+    { dep: 'WebphoneOptions', optional: true }
+  ]
+})
 export default class Webphone extends RcModule {
   /**
    * @constructor

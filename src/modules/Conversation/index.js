@@ -1,4 +1,5 @@
 import RcModule from '../../lib/RcModule';
+import { Module } from '../../lib/di';
 import moduleStatuses from '../../enums/moduleStatuses';
 
 import {
@@ -16,6 +17,9 @@ import proxify from '../../lib/proxy/proxify';
  * @class
  * @description Conversation managing module
  */
+@Module({
+  deps: ['MessageSender', 'ExtensionInfo', 'MessageStore']
+})
 export default class Conversation extends RcModule {
   /**
    * @constructor

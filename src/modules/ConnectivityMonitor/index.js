@@ -1,5 +1,6 @@
 import 'isomorphic-fetch';
 import RcModule from '../../lib/RcModule';
+import { Module } from '../../lib/di';
 import actionTypes from './actionTypes';
 import moduleStatuses from '../../enums/moduleStatuses';
 import getConnectivityMonitorReducer from './getConnectivityMonitorReducer';
@@ -17,6 +18,14 @@ const DEFAULT_CHECK_URI
  * @class
  * @description Connectivity monitor module
  */
+@Module({
+  deps: [
+    'Alert',
+    'Client',
+    'Environment',
+    { dep: 'ConnectivityMonitorOptions', optional: true }
+  ]
+})
 export default class ConnectivityMonitor extends RcModule {
   /**
    * @constructor

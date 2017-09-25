@@ -1,5 +1,6 @@
 import 'core-js/fn/array/find';
 import RcModule from '../../lib/RcModule';
+import { Module } from '../../lib/di';
 import getRegionSettingsReducer, {
   getCountryCodeReducer,
   getAreaCodeReducer,
@@ -14,6 +15,9 @@ import proxify from '../../lib/proxy/proxify';
  * @class
  * @description Region settings managing module
  */
+@Module({
+  deps: ['Storage', 'ExtensionInfo', 'DialingPlan', 'Alert', 'TabManager']
+})
 export default class RegionSettings extends RcModule {
   /**
    * @constructor

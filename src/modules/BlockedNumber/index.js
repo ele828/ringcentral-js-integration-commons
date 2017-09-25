@@ -1,3 +1,4 @@
+import { Module } from '../../lib/di';
 import DataFetcher from '../../lib/DataFetcher';
 import fetchList from '../../lib/fetchList';
 
@@ -5,6 +6,9 @@ import fetchList from '../../lib/fetchList';
  * @class
  * @description Blocked number list managing module
  */
+@Module({
+  deps: ['Client', { dep: 'BlockedNumberOptions', optional: true }]
+})
 export default class BlockedNumber extends DataFetcher {
   /**
    * @constructor

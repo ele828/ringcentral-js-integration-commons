@@ -1,3 +1,4 @@
+import { Module } from '../../lib/di';
 import DataFetcher from '../../lib/DataFetcher';
 import fetchList from '../../lib/fetchList';
 
@@ -5,6 +6,9 @@ import fetchList from '../../lib/fetchList';
  * @class
  * @description Extension forwarding number list module
  */
+@Module({
+  deps: ['Client', { dep: 'ForwardingNumberOptions', optional: true }]
+})
 export default class ForwardingNumber extends DataFetcher {
   /**
    * @constructor

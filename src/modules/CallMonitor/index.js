@@ -1,4 +1,5 @@
 import 'core-js/fn/array/find';
+import { Module } from '../../lib/di';
 import RcModule from '../../lib/RcModule';
 import moduleStatuses from '../../enums/moduleStatuses';
 import actionTypes from './actionTypes';
@@ -57,6 +58,17 @@ function matchWephoneSessionWithAcitveCall(sessions, callItem) {
  * @class
  * @description active calls monitor module
  */
+@Module({
+  deps: [
+    'Call',
+    'AccountInfo',
+    'Webphone',
+    'Storage',
+    'DetailedPresence',
+    { dep: 'ActivityMatcher', optional: true },
+    { dep: 'CallMonitorOptions', optional: true }
+  ]
+})
 export default class CallMonitor extends RcModule {
   /**
    * @constructor

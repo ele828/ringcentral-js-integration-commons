@@ -1,4 +1,5 @@
 import RcModule from '../../lib/RcModule';
+import { Module } from '../../lib/di';
 import getPresenceReducer, {
   getLastNotDisturbDndStatusReducer
 } from './getPresenceReducer';
@@ -15,6 +16,12 @@ const presenceEndPoint = /.*\/presence(\?.*)?/;
  * @class
  * @description Presence info module
  */
+@Module({
+  deps: [
+    'Auth', 'Client', 'Storage', 'Subscription',
+    { dep: 'PresenceOptions', optional: true }
+  ]
+})
 export default class Presence extends RcModule {
   /**
    * @constructor

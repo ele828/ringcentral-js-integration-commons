@@ -1,4 +1,5 @@
 import RcModule from '../../lib/RcModule';
+import { Module } from '../../lib/di';
 import isBlank from '../../lib/isBlank';
 import normalizeNumber from '../../lib/normalizeNumber';
 import ensureExist from '../../lib/ensureExist';
@@ -37,6 +38,15 @@ const DEFAULT_AVATARQUERYINTERVAL = 2 * 1000; // 2 seconds
  * @class
  * @description Contacts managing module
  */
+@Module({
+  deps: [
+    'Client',
+    'AddressBook',
+    'AccountExtension',
+    'AccountPhoneNumber',
+    { dep: 'ContactsOptions', optional: true }
+  ]
+})
 export default class Contacts extends RcModule {
   /**
    * @constructor

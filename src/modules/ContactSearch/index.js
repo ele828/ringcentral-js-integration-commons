@@ -1,4 +1,5 @@
 import RcModule from '../../lib/RcModule';
+import { Module } from '../../lib/di';
 import loginStatus from '../../modules/Auth/loginStatus';
 import proxify from '../../lib/proxy/proxify';
 
@@ -72,6 +73,13 @@ export function groupByFirstLetterOfName(contactItems) {
  * @class
  * @description Contact search module
  */
+@Module({
+  deps: [
+    'Auth',
+    'Storage',
+    { dep: 'ContactSearchOptions', optional: true }
+  ]
+})
 export default class ContactSearch extends RcModule {
   /**
    * @constructor

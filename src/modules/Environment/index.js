@@ -1,5 +1,6 @@
 import SDK from 'ringcentral';
 import RcModule from '../../lib/RcModule';
+import { Module } from '../../lib/di';
 import moduleStatuses from '../../enums/moduleStatuses';
 import proxify from '../../lib/proxy/proxify';
 import actionTypes from './actionTypes';
@@ -13,6 +14,13 @@ import getEnvironmentReducer, {
  * @class
  * @description Environment module manages which api server the app calls.
  */
+@Module({
+  deps: [
+    'Client',
+    'GlobalStorage',
+    { dep: 'EnvironmentOptions', optional: true }
+  ]
+})
 export default class Environment extends RcModule {
   /**
    * @constructor

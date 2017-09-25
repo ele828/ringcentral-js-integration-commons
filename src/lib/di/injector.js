@@ -2,134 +2,197 @@ import { combineReducers } from 'redux';
 
 import RcModule from '../RcModule';
 import Container from './container';
-import ModuleRegistry from './registry/module_registry';
-import ProviderRegistry from './registry/provider_registry';
-import * as Errors from './errors';
+import Registry from './registry/registry';
 import { ValueProvider, ClassProvider, FactoryProvider } from './provider';
-import { isEmpty, isAnonymousFunction, getParentClass, camelize } from './utils/utils';
+import { camelize } from './utils/utils';
+import { DIError, CircularDependencyError } from './utils/error';
 import {
-  isFunction,
   isObject,
-  isArray,
   isValueProvider,
   isStaticClassProvider,
   isExistingProvider,
   isFactoryProvider,
 } from './utils/is_type';
 
-export class Injector {
-  static container = new Container();
-  static moduleRegistry = new ModuleRegistry();
-  static providerRegistry = new ProviderRegistry();
-  static universalProviders = new Map();
+const REDUCER_LITERAL = '_reducer';
+const PROXY_REDUCER_LITERAL = '_proxyReducer';
+const STATE_FUNC_LITERAL = '_getState';
+const PROXY_STATE_FUNC_LITERAL = '_getProxyState';
 
-  static resolveModuleProvider(provider, pending = new Set()) {
+/**
+ * Injector is used for injecting providers to modules.
+ * Hierarchical provider injection is supported.
+ */
+export class Injector {
+  static pending = new Set();
+
+  constructor() {
+    this.parentInjector = null;
+    this.moduleRegistry = Registry.moduleRegistry;
+    this.providerRegistry = Registry.providerRegistry;
+    this.container = new Container();
+    this.universalProviders = new Map();
+  }
+
+  /**
+   * Resolve module providers recursively.
+   * May search for providers in parent injector.
+   * @param {Provider} provider
+   * @param {Set} pending - process record
+   */
+  resolveModuleProvider(provider, pending = Injector.pending) {
     const container = this.container;
-    if (container.has(provider.token)) return;
+    if (!provider) {
+      throw DIError('Expected valid provider instance', provider);
+    }
+    // If provider exists in ancestor injector,
+    // then it should create a reference to that provider locally.
+    if (container.has(provider.token)) {
+      if (!container.nativeHas(provider.token)) {
+        container.set(provider.token, container.get(provider.token));
+      }
+      return;
+    }
+    if (!this.universalProviders.has(provider.token)) {
+      if (this.parentInjector) {
+        this.parentInjector.resolveModuleProvider(provider);
+      }
+    }
     if (provider instanceof ValueProvider) {
       const value = provider.spread
         ? { value: provider.value, spread: provider.spread }
         : provider.value;
-      container.set(provider.token, value);
+      provider.setInstance(value);
+      container.set(provider.token, provider);
     } else if (provider instanceof FactoryProvider) {
       pending.add(provider.token);
-      const dependencies = this.resolveDependencies(provider.deps, pending);
+      // eslint-disable-next-line
+      const deps = provider.deps.map(dep => isObject(dep) ? dep : { dep, optional: false });
+      const dependencies = this.resolveDependencies(deps, pending);
       const factoryProvider = provider.func.call(null, dependencies);
-      container.set(provider.token, factoryProvider);
+      provider.setInstance(factoryProvider);
+      container.set(provider.token, provider);
       pending.delete(provider.token);
     } else if (provider instanceof ClassProvider) {
-      const moduleMetadata = this.moduleRegistry.get(provider.klass.name);
-      const deps = moduleMetadata !== null ? moduleMetadata.deps : [];
-      const Klass = provider.klass;
-      if (!deps || deps.length === 0) {
-        container.set(provider.token, new Klass());
-        return;
+      if (this.moduleRegistry.has(provider.klass.name)) {
+        Registry.processModuleLibraryInheritance(provider.klass.name);
+        const moduleMetadata = this.moduleRegistry.get(provider.klass.name);
+        const deps = moduleMetadata !== null ? moduleMetadata.deps : [];
+        const Klass = provider.klass;
+        if (!deps || deps.length === 0) {
+          provider.setInstance(new Klass());
+          container.set(provider.token, provider);
+          return;
+        }
+        pending.add(provider.token);
+        const dependencies = this.resolveDependencies(deps, pending);
+        const instance = new Klass(dependencies);
+        provider.setInstance(instance);
+        container.set(provider.token, provider);
+        pending.delete(provider.token);
+      } else if (this.providerRegistry.has(provider.token)) {
+        // Depends on moduleFactory provider
+        this.resolveModuleFactoryProvider(provider);
       }
-      pending.add(provider.token);
-      const dependencies = this.resolveDependencies(deps, pending);
-      const instance = new Klass(dependencies);
-      container.set(provider.token, instance);
-      pending.delete(provider.token);
     }
   }
 
-  static resolveDependencies(deps, pending) {
+  /**
+   * Resolve module dependencies recursively.
+   * If module is not optional and can not be resolved, then an DIError will be thrown
+   * @param {Array} deps - module dependencies
+   * @param {Set} pending - process record
+   */
+  resolveDependencies(deps, pending) {
     const dependencies = {};
-    for (let dep of deps) {
-      let isOptional = false;
-
-      // Support nested object dependency declaration
-      if (isObject(dep)) {
-        dep = dep.dep;
-        isOptional = dep.optional;
-      }
-
+    for (const { dep, optional } of deps) {
       if (pending.has(dep)) {
-        // TODO: Extract to an error function
-        const path = Array.from(pending.values()).join(' -> ');
-        throw new Error(`Circular dependency detected: ${path} -> ${dep}`);
+        throw CircularDependencyError(pending, dep);
       }
       if (!this.container.has(dep)) {
-        const dependentModuleProvider = this.universalProviders.get(dep);
-        if (!isOptional && !dependentModuleProvider) {
-          throw new Error(`Module [${dep}] is not registered as a Provider`);
+        if (this.universalProviders.has(dep)) {
+          const dependentModuleProvider = this.universalProviders.get(dep);
+          this.resolveModuleProvider(dependentModuleProvider);
+        } else if (this.parentInjector) {
+          // Dependent module provider can not be found locally,
+          // try to resolve provider in ancestor injectors.
+          this.parentInjector.resolveModuleProviderForChildren(dep);
         }
-        this.resolveModuleProvider(dependentModuleProvider, pending);
       }
-      const dependentModule = this.container.get(dep);
-      if (!isOptional && !dependentModule) {
-        throw new Error(`Module [${dep}] can not be resolved`);
-      }
+      // If the dependency is optional but Provider is found, then try to inject the dependency.
+      // Otherwise, if provider is not found, then just ignore.
+      // If the dependency is not optional and Provider is found, then try to inject the dependency.
+      // Otherwise, if the Provider is not found, then an Error should be thrown.
+      if (!optional || this.container.has(dep)) {
+        const dependentModule = this.container.get(dep).getInstance();
 
-      // Value dependency and use spread, in this case, value object needs to be spreaded
-      if (dependentModule.value !== undefined && dependentModule.spread) {
-        Object.assign(dependencies, dependentModule.value);
-      } else {
-        dependencies[camelize(dep)] = dependentModule;
+        // Value dependency and use spread, in this case, value object needs to be spreaded
+        if (dependentModule.value !== undefined && dependentModule.spread) {
+          Object.assign(dependencies, dependentModule.value);
+        } else {
+          dependencies[camelize(dep)] = dependentModule;
+        }
+      } else if (!optional) {
+        throw DIError(`Dependency Module [${dep}] can not be resolved`);
       }
     }
     // Injector instance will be injected into each module
-    dependencies[camelize(Injector.name)] = Injector;
+    dependencies.injector = this;
     return dependencies;
   }
 
   /**
-   * Process the inheritance relationship of ModuleFactory.
-   * Support some inheritance options such as overwrite, merge, etc.
-   * ModuleFactory can only inherit from ModuleFactory.
-   *
-   * @param {Function|Class} rootClass - base module factory
-   * @return {Array} - provider metadata
+   * Resolve a module provider needed by its child providers.
+   * It's a wrapper function only for child injectors.
+   * @param {String} providerToken
    */
-  static processModuleFactoryInheritance(rootClass) {
-    let providerMetadata = [];
-    for (
-      let currentClass = rootClass;
-      !isEmpty(currentClass.name);
-      currentClass = getParentClass(currentClass)
-    ) {
-      const currentProviderMetadata = this.providerRegistry.get(currentClass.name);
-      // Class and Factory providers will be overwritten by child class by default
-      providerMetadata = [...currentProviderMetadata, ...providerMetadata];
+  resolveModuleProviderForChildren(providerToken) {
+    if (this.universalProviders.has(providerToken)) {
+      this.resolveModuleProvider(this.universalProviders.get(providerToken));
+    } else if (this.parentInjector) {
+      this.parentInjector.resolveModuleProviderForChildren(providerToken);
     }
-    return providerMetadata;
   }
 
   /**
-   * Process the inheritance relationship of Module and Library.
-   * Module can inherit from Module and Library.
+   * Used to resolve a ModuleFactory provider specifically.
+   * @param {Provider} providerInstance
    */
-  static processModuleLibraryInheritance() {
-
+  resolveModuleFactoryProvider(providerInstance) {
+    if (!this.container.has(providerInstance.token)) {
+      Injector.pending.add(providerInstance.token);
+      const instance = Injector.bootstrap(providerInstance.klass, this);
+      providerInstance.setInstance(instance);
+      this.container.set(
+        providerInstance.token,
+        providerInstance
+      );
+      Injector.pending.delete(providerInstance.token);
+    }
   }
 
-  // Entrypoint of the framework
-  static bootstrap(RootClass) {
-    // Implement inheritance for ModuleFactory
-    const providerMetadata = this.processModuleFactoryInheritance(RootClass);
+  /**
+   * A static wrapper function for supporting hierarchical bootstrap.
+   * @param {Class} RootClas
+   * @param {Injector} parentInjector
+   */
+  static bootstrap(RootClass, parentInjector = null) {
+    const injector = new Injector();
+    if (parentInjector) injector.setParent(parentInjector);
+    return injector._bootstrap(RootClass);
+  }
 
-    // Implement inheritance for Module and Library
-    // Will modify the metadata of child module or library directly
+  /**
+   * To bootstrap module factory and resolve all providers.
+   * @param {Class} RootClass
+   */
+  _bootstrap(RootClass) {
+    if (this.container.nativeHas(RootClass.name)) {
+      return this.container.nativeGet(RootClass.name).getInstance();
+    }
+
+    // Implement inheritance for ModuleFactory
+    const providerMetadata = Registry.processModuleFactoryInheritance(RootClass);
 
     // Iterate through all provider metadata
     // Discard providers in parent class overwritten by children
@@ -138,41 +201,52 @@ export class Injector {
       if (isValueProvider(provider)) {
         universalProviders.set(
           provider.provide,
-          new ValueProvider(provider.provide, provider.useValue, provider.spread)
+          new ValueProvider(provider.provide, provider.useValue, provider.spread, provider.private)
         );
       } else if (isStaticClassProvider(provider)) {
         universalProviders.set(
           provider.provide,
-          new ClassProvider(provider.provide, provider.useClass, provider.deps)
+          new ClassProvider(provider.provide, provider.useClass, provider.deps, provider.private)
         );
       } else if (isExistingProvider(provider)) {
         universalProviders.set(
           provider.provide,
-          new ClassProvider(provider.provide, provider.useExisting, null)
+          // TODO: support useExisting to be an module token
+          new ClassProvider(provider.provide, provider.useExisting, null, provider.private)
         );
       } else if (isFactoryProvider(provider)) {
         universalProviders.set(
           provider.provide,
-          new FactoryProvider(provider.provide, provider.useFactory, provider.deps)
+          // eslint-disable-next-line
+          new FactoryProvider(provider.provide, provider.useFactory, provider.deps, provider.private)
         );
       } else {
-        throw new Error('Invalid provider found');
+        throw DIError('Expected valid provider', provider);
       }
     }
 
+    /**
+     * TODO: Perform metadata normalization
+     */
+
     // Resolve dependencies and create instances of provides
     const container = this.container;
-    const providerQueue = Array.from(universalProviders.values());
-    while (providerQueue.length > 0) {
-      const provider = providerQueue.shift();
-      if (!container.has(provider.token)) {
-        this.resolveModuleProvider(provider);
+    for (const provider of this.universalProviders.values()) {
+      if (!container.has(provider.provide)) {
+        // Provider is a module factory
+        if (this.providerRegistry.has(provider.token)) {
+          this.resolveModuleFactoryProvider(provider);
+        } else {
+          this.resolveModuleProvider(provider);
+        }
       }
     }
 
     const moduleProviders = {};
-    for (const [name, module] of this.container.entries()) {
-      moduleProviders[name] = module;
+    for (const [token, moduleProvider] of container.entries()) {
+      if (!moduleProvider.private) {
+        moduleProviders[camelize(token)] = moduleProvider.getInstance();
+      }
     }
 
     // Instantiate root module
@@ -183,8 +257,9 @@ export class Injector {
     // Register all module providers to root instance
     for (const name of Object.keys(moduleProviders)) {
       const module = moduleProviders[name];
-      rootClassInstance.addModule(name, module);
-
+      if (rootClassInstance instanceof RcModule) {
+        rootClassInstance.addModule(name, module);
+      }
       if (module.reducer) {
         reducers[name] = module.reducer;
       }
@@ -197,88 +272,66 @@ export class Injector {
       // Do things like reducer registration, getState injection
       if (module instanceof RcModule) {
         if (module._reducer) {
-          Object.defineProperty(module, '_getState', {
-            value: rootClassInstance.state[name]
+          Object.defineProperty(module, STATE_FUNC_LITERAL, {
+            value: () => rootClassInstance.state[name]
           });
         }
         if (module._proxyReducer) {
-          Object.defineProperty(module, '_getProxyState', {
-            value: rootClassInstance.state[name]
+          Object.defineProperty(module, PROXY_STATE_FUNC_LITERAL, {
+            value: () => rootClassInstance.state[name]
           });
         }
+        Object.defineProperty(rootClassInstance, REDUCER_LITERAL, {
+          value: combineReducers({
+            ...reducers,
+            lastAction: (state = null, action) => {
+              // console.log(action);
+              return action;
+            }
+          })
+        });
+
+        Object.defineProperty(rootClassInstance, PROXY_REDUCER_LITERAL, {
+          value: combineReducers({
+            ...proxyReducers,
+          })
+        });
       }
     }
 
-    Object.defineProperty(rootClassInstance, '_reducer', {
-      value: combineReducers({
-        ...reducers,
-        lastAction: (state = null, action) => {
-          console.log(action);
-          return action;
-        }
-      })
-    });
-
-    Object.defineProperty(rootClassInstance, '_reducer', {
-      value: combineReducers({
-        ...proxyReducers,
-      })
-    });
-
+    // Regard root class as a provider
+    this.container.set(
+      RootClass.name,
+      new ClassProvider(RootClass.name, rootClassInstance, null, false)
+    );
     return rootClassInstance;
   }
 
-  static registerModule(constructor, metadata) {
-    if (!constructor || !isFunction(constructor)) {
-      throw Errors.InvalidModuleTypeError;
-    }
-    const moduleName = constructor.name;
-    if (isEmpty(moduleName)) {
-      throw Errors.InvalidModuleTypeError;
-    }
-    if (isAnonymousFunction(moduleName)) {
-      throw Errors.AnonymousFunctionError;
-    }
-    if (metadata && !isObject(metadata)) {
-      throw Errors.InvalidModuleParameterError;
-    }
-    if (!metadata) {
-      metadata = null;
-    }
-    this.moduleRegistry.set(moduleName, metadata);
+  /**
+   * Get specific provider by injector.
+   * @param {String} token
+   */
+  get(token) {
+    return this.container.get(token).getInstance();
   }
 
-  static registerModuleProvider(constructor, metadata) {
-    if (!constructor || !isFunction(constructor)) {
-      throw Errors.InvalidModuleFactoryTypeError;
+  /**
+   * Set parent injector and parent container.
+   * Construct a tree-like structure for hierarchical injector.
+   * @param {Injector} parentInjector
+   */
+  setParent(parentInjector) {
+    if (parentInjector) {
+      this.container.setParent(parentInjector.container);
+      this.parentInjector = parentInjector;
     }
-    const moduleFactoryName = constructor.name;
-    if (isEmpty(moduleFactoryName)) {
-      throw Errors.InvalidModuleFactoryTypeError;
-    }
-    if (isAnonymousFunction(moduleFactoryName)) {
-      throw Errors.AnonymousFunctionError;
-    }
-    if (metadata && !isObject(metadata)) {
-      throw Errors.InvalidModuleFactoryParameterError;
-    }
-    if (metadata && metadata.providers && !isArray(metadata.providers)) {
-      throw Errors.InvalidProviderTypeError;
-    }
-    if (!metadata.providers) {
-      throw Errors.NoProvidersFoundError;
-    }
-    if (!metadata) {
-      metadata = null;
-    }
-    // TODO: validate module providers
-    // useValue should be object or number or string, etc.
-    // spread can only be used if useValue is an object.
-    this.providerRegistry.set(moduleFactoryName, metadata.providers);
   }
 
-  static get(moduleToken) {
-    return this.container.get(moduleToken);
+  // TODO: support hierachical reset
+  static reset() {
+    this.pending.clear();
+    Registry.moduleRegistry.reset();
+    Registry.providerRegistry.reset();
   }
 
 }

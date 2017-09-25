@@ -1,4 +1,5 @@
 import mask from 'json-mask';
+import { Module } from '../../lib/di';
 import DataFetcher from '../../lib/DataFetcher';
 
 const DEFAULT_MASK = [
@@ -45,6 +46,9 @@ function extractData(info) {
  * @class
  * @description Extension info module
  */
+@Module({
+  deps: ['Client', { dep: 'ExtensionInfoOptions', optional: true }]
+})
 export default class ExtensionInfo extends DataFetcher {
   /**
    * @constructor

@@ -1,4 +1,5 @@
 import RcModule from '../../lib/RcModule';
+import { Module } from '../../lib/di';
 import moduleStatuses from '../../enums/moduleStatuses';
 import sleep from '../../lib/sleep';
 import proxify from '../../lib/proxy/proxify';
@@ -7,6 +8,9 @@ import proxify from '../../lib/proxy/proxify';
  * @class
  * @description Softphone module to call softphone
  */
+@Module({
+  deps: ['Brand', { dep: 'SoftphoneOptions', optional: true }]
+})
 export default class Softphone extends RcModule {
   /**
    * @constructor

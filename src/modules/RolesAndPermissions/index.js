@@ -1,3 +1,4 @@
+import { Module } from '../../lib/di';
 import DataFetcher from '../../lib/DataFetcher';
 import permissionsMessages from './permissionsMessages';
 import loginStatus from '../Auth/loginStatus';
@@ -17,6 +18,12 @@ function extractData(permissions) {
  * @class
  * @description Roles and permission module
  */
+@Module({
+  deps: [
+    'Client', 'Alert', 'ExtensionInfo',
+    { dep: 'RolesAndPermissionsOptions', optional: true }
+  ]
+})
 export default class RolesAndPermissions extends DataFetcher {
   /**
    * @constructor

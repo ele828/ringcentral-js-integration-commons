@@ -1,3 +1,4 @@
+import { Module } from '../../lib/di';
 import DataFetcher from '../../lib/DataFetcher';
 import sleep from '../../lib/sleep';
 import fetchList from '../../lib/fetchList';
@@ -14,6 +15,13 @@ const DEFAULT_TTL = 5 * 60 * 1000;
  * @class
  * @description Active calls list manaing module
  */
+@Module({
+  deps: [
+    'Client',
+    'TabManager',
+    { dep: 'AccountPhoneNumberOptions', optional: true }
+  ]
+})
 export default class ActiveCalls extends DataFetcher {
   /**
    * @constructor

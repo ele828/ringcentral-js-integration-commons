@@ -1,4 +1,5 @@
 import RcModule from '../RcModule';
+import { Library } from '../di';
 import { prefixEnum } from '../Enum';
 import SynchronizedStorage from '../../lib/SynchronizedStorage';
 
@@ -13,7 +14,10 @@ import getStorageReducer from './getStorageReducer';
  * @description Alternative implementation of the Storage class.
  *  Allows registeration of reducers so that persisted states can be computed with reducers.
  */
-export default class Storage extends RcModule {
+@Library({
+  deps: [{ dep: 'StorageBaseOptions', optional: true }]
+})
+export default class StorageBase extends RcModule {
   constructor({
     name,
     actionTypes = prefixEnum({ enumMap: actionTypesBase, prefix: name }),

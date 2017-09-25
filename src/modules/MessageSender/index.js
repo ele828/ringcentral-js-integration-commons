@@ -1,5 +1,6 @@
 import 'core-js/fn/array/find';
 import RcModule from '../../lib/RcModule';
+import { Module } from '../../lib/di';
 import isBlank from '../../lib/isBlank';
 import moduleStatuses from '../../enums/moduleStatuses';
 
@@ -14,6 +15,9 @@ import proxify from '../../lib/proxy/proxify';
  * @class
  * @description Message sender and validator module
  */
+@Module({
+  deps: ['Alert', 'Client', 'ExtensionInfo', 'ExtensionPhoneNumber', 'NumberValidate']
+})
 export default class MessageSender extends RcModule {
   /**
    * @constructor
