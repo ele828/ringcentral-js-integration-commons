@@ -1,4 +1,5 @@
 import RcModule from '../../lib/RcModule';
+import { Module } from '../../lib/di';
 import isBlank from '../../lib/isBlank';
 import moduleStatuses from '../../enums/moduleStatuses';
 import normalizeNumber from '../../lib/normalizeNumber';
@@ -12,6 +13,9 @@ import getNumberValidateReducer from './getNumberValidateReducer';
  * @class
  * @description Validate number with number parser api
  */
+@Module({
+  deps: ['Client', 'AccountExtension', 'RegionSettings', 'AccountInfo']
+})
 export default class NumberValidate extends RcModule {
   /**
    * @constructor

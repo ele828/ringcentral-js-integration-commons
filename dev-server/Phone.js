@@ -1,4 +1,4 @@
-import 'whatwg-fetch';
+import 'isomorphic-fetch';
 import SDK from 'ringcentral';
 import RingCentralClient from 'ringcentral-client';
 import { combineReducers } from 'redux';
@@ -520,7 +520,7 @@ export default class Phone extends RcModule {
     this._reducer = combineReducers({
       ...reducers,
       lastAction: (state = null, action) => {
-        console.log(action);
+        // console.log(action);
         return action;
       },
     });

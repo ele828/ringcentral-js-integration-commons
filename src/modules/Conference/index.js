@@ -1,4 +1,5 @@
 import mask from 'json-mask';
+import { Module } from '../../lib/di';
 import DataFetcher from '../../lib/DataFetcher';
 
 const DEFAULT_MASK = 'phoneNumber,hostCode,participantCode,phoneNumbers(country,phoneNumber)';
@@ -7,6 +8,9 @@ const DEFAULT_MASK = 'phoneNumber,hostCode,participantCode,phoneNumbers(country,
  * @class
  * @description Conference managing module
  */
+@Module({
+  deps: ['Client', 'RegionSettings', { dep: 'ConferenceOptions', optional: true }]
+})
 export default class Conference extends DataFetcher {
   /**
    * @constructor

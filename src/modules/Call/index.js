@@ -1,4 +1,5 @@
 import RcModule from '../../lib/RcModule';
+import { Module } from '../../lib/di';
 import callingModes from '../CallingSettings/callingModes';
 import moduleStatuses from '../../enums/moduleStatuses';
 import proxify from '../../lib/proxy/proxify';
@@ -15,6 +16,20 @@ import ringoutErrors from '../Ringout/ringoutErrors';
  * @class
  * @description Call managing module
  */
+@Module({
+  deps: [
+    'Alert',
+    'Client',
+    'Storage',
+    'Softphone',
+    'Ringout',
+    'Webphone',
+    'NumberValidate',
+    'RegionSettings',
+    'CallingSettings',
+    { provide: 'CallOptions', optional: true }
+  ]
+})
 export default class Call extends RcModule {
   /**
    * @constructor

@@ -1,4 +1,5 @@
 import Pollable from '../Pollable';
+import { Library } from '../di';
 import { prefixEnum } from '../Enum';
 import getDataFetcherReducer, {
   getDefaultDataReducer,
@@ -12,6 +13,12 @@ import ensureExist from '../ensureExist';
 const DEFAULT_TTL = 30 * 60 * 1000;
 const DEFAULT_RETRY = 62 * 1000;
 
+@Library({
+  deps: [
+    'Auth', 'Client', 'Storage', 'Subscription', 'TabManager',
+    { dep: 'DataFetcherOptions', optional: true }
+  ]
+})
 export default class DataFetcher extends Pollable {
   constructor({
     auth,

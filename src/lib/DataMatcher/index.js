@@ -1,5 +1,6 @@
 import 'core-js/fn/array/every';
 import RcModule from '../RcModule';
+import { Library } from '../di';
 import { prefixEnum } from '../Enum';
 import moduleStatuses from '../../enums/moduleStatuses';
 import baseActionTypes from './baseActionTypes';
@@ -19,6 +20,12 @@ export function checkName(name) {
 const DEFAULT_TTL = 30 * 1000;
 const DEFAULT_NO_MATCH_TTL = 30 * 1000;
 
+@Library({
+  deps: [
+    'Storage',
+    { dep: 'DataMatcherOptions', optional: true }
+  ]
+})
 export default class DataMatcher extends RcModule {
   constructor({
     name,

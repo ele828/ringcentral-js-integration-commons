@@ -1,3 +1,4 @@
+import { Module } from '../../lib/di';
 import Pollable from '../../lib/Pollable';
 import sleep from '../../lib/sleep';
 import syncTypes from '../../enums/syncTypes';
@@ -34,6 +35,14 @@ function getSyncParams(syncToken, pageId) {
  * @class
  * @description Accound book module to get user person contacts in RC
  */
+@Module({
+  deps: [
+    'Client',
+    'Auth',
+    'Storage',
+    { dep: 'AddessBookOptions', optional: true }
+  ]
+})
 export default class AddressBook extends Pollable {
   /**
    * @constructor

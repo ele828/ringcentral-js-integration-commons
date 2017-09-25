@@ -1,4 +1,5 @@
 import RcModule from '../../lib/RcModule';
+import { Module } from '../../lib/di';
 import getCallingSettingsReducer, {
   getCallWithReducer,
   getRingoutPromptReducer,
@@ -17,6 +18,20 @@ import proxify from '../../lib/proxy/proxify';
  * @class
  * @description Call setting managing module
  */
+@Module({
+  deps: [
+    'Alert',
+    'Brand',
+    'ExtensionInfo',
+    'ExtensionPhoneNumber',
+    'ForwardingNumber',
+    'Storage',
+    'RolesAndPermissions',
+    'TabManager',
+    'Webphone',
+    { deps: 'CallingSettingsOptions', optional: true }
+  ]
+})
 export default class CallingSettings extends RcModule {
   /**
    * @constructor

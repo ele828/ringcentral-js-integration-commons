@@ -1,3 +1,4 @@
+import { Module } from '../../lib/di';
 import Presence from '../Presence';
 import moduleStatuses from '../../enums/moduleStatuses';
 import { getLastNotDisturbDndStatusReducer } from '../Presence/getPresenceReducer';
@@ -15,6 +16,15 @@ const presenceRegExp = /\/presence(\?.*)?/;
  * @class
  * @description Presence detail info managing module
  */
+@Module({
+  deps: [
+    'Auth',
+    'Client',
+    'Storage',
+    'Subscription',
+    'ConnectivityMonitor'
+  ]
+})
 export default class DetailedPresence extends Presence {
   /**
    * @constructor

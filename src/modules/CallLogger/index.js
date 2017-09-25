@@ -1,3 +1,4 @@
+import { Module } from '../../lib/di';
 import LoggerBase from '../../lib/LoggerBase';
 import ensureExist from '../../lib/ensureExist';
 import {
@@ -23,6 +24,17 @@ export function callIdentityFunction(call) {
  * @class
  * @description call logger module
  */
+@Module({
+  deps: [
+    'Storage',
+    'ActivityMatcher',
+    'CallHistory',
+    'CallMonitor',
+    'ContactMatcher',
+    'TabManager',
+    { dep: 'CallLoggerOptions', optional: false }
+  ]
+})
 export default class CallLogger extends LoggerBase {
   /**
    * @constructor

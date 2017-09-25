@@ -1,5 +1,6 @@
 import uuid from 'uuid';
 import RcModule from '../../lib/RcModule';
+import { Module } from '../../lib/di';
 import moduleStatuses from '../../enums/moduleStatuses';
 import actionTypes from './actionTypes';
 import alertLevels from './alertLevels';
@@ -10,6 +11,9 @@ import proxify from '../../lib/proxy/proxify';
  * @class
  * @description Alert messages managing module.
  */
+@Module({
+  deps: [{ dep: 'AlertOptions', optional: true }]
+})
 export default class Alert extends RcModule {
   /**
    * @constructor

@@ -1,5 +1,6 @@
 import proxify from '../../lib/proxy/proxify';
 import RcModule from '../../lib/RcModule';
+import { Module } from '../../lib/di';
 import actionTypes from './actionTypes';
 import callStatus from './callStatus';
 import getRecentCallsReducer from './getRecentCallsReducer';
@@ -11,6 +12,9 @@ import concurrentExecute from '../../lib/concurrentExecute';
  * @class
  * @description Retrieve all recent calls related to a specified contact.
  */
+@Module({
+  deps: ['Client', 'CallHistory']
+})
 export default class RecentCalls extends RcModule {
   /**
    * @constructor

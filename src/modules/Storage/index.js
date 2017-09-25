@@ -1,3 +1,4 @@
+import { Module } from '../../lib/di';
 import StorageBase from '../../lib/StorageBase';
 import loginStatus from '../Auth/loginStatus';
 import moduleStatuses from '../../enums/moduleStatuses';
@@ -7,6 +8,9 @@ import moduleStatuses from '../../enums/moduleStatuses';
  * @description Alternative implementation of the Storage class.
  *  Allows registeration of reducers so that persisted states can be computed with reducers.
  */
+@Module({
+  deps: ['Auth', { dep: 'StorageOptions', optional: true }]
+})
 export default class Storage extends StorageBase {
   /**
    * @constructor

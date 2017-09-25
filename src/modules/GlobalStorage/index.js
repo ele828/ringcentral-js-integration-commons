@@ -1,3 +1,4 @@
+import { Module } from '../../lib/di';
 import StorageBase from '../../lib/StorageBase';
 import moduleStatuses from '../../enums/moduleStatuses';
 
@@ -6,6 +7,9 @@ import moduleStatuses from '../../enums/moduleStatuses';
  * @description Alternative implementation of the Storage class.
  *  Allows registeration of reducers so that persisted states can be computed with reducers.
  */
+@Module({
+  deps: [{ dep: 'GlobalStorageOptions', optional: true }]
+})
 export default class GlobalStorage extends StorageBase {
   /**
    * @constructor

@@ -1,4 +1,5 @@
 import RcModule from '../../lib/RcModule';
+import { Module } from '../../lib/di';
 import moduleStatuses from '../../enums/moduleStatuses';
 import actionTypes from './actionTypes';
 import getRingoutReducer from './getRingoutReducer';
@@ -13,6 +14,9 @@ const DEFAULT_TIME_BETWEEN_CALLS = 10000;
  * @class
  * @description Ringout managing module
  */
+@Module({
+  deps: ['Auth', 'Client', { dep: 'RingoutOptions', optional: true }]
+})
 export default class Ringout extends RcModule {
   /**
    * @constructor

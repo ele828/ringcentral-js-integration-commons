@@ -1,4 +1,5 @@
 import mask from 'json-mask';
+import { Module } from '../../lib/di';
 import DataFetcher from '../../lib/DataFetcher';
 
 const DEFAULT_MASK = [
@@ -18,6 +19,9 @@ const DEFAULT_MASK = [
  * @class
  * @description Accound info managing module.
  */
+@Module({
+  deps: ['Client', { dep: 'AccountInfoOptions', optional: true }]
+})
 export default class AccountInfo extends DataFetcher {
   /**
    * @constructor

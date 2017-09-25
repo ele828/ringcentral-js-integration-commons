@@ -1,4 +1,5 @@
 import RcModule from '../../lib/RcModule';
+import { Module } from '../../lib/di';
 import moduleStatuses from '../../enums/moduleStatuses';
 import ensureExist from '../../lib/ensureExist';
 import actionTypes from './actionTypes';
@@ -11,6 +12,16 @@ import proxify from '../../lib/proxy/proxify';
  * @class
  * @description Conversation list managing module
  */
+@Module({
+  deps: [
+    'MessageStore',
+    'ExtensionInfo',
+    'ContactMatcher',
+    'ConversationLogger',
+    'ConversationMatcher',
+    { dep: 'MessagesOptions', optional: true }
+  ]
+})
 export default class Messages extends RcModule {
   /**
    * @constructor

@@ -1,4 +1,5 @@
 import 'core-js/fn/array/find';
+import { Module } from '../../lib/di';
 import fetchList from '../../lib/fetchList';
 import DataFetcher from '../../lib/DataFetcher';
 
@@ -6,6 +7,9 @@ import DataFetcher from '../../lib/DataFetcher';
  * @class
  * @description Extension device list module
  */
+@Module({
+  deps: ['Client', { dep: 'ExtensionDeviceOptions', optional: true }]
+})
 export default class ExtensionDevice extends DataFetcher {
   /**
    * @constructor

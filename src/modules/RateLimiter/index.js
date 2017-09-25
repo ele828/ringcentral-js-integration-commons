@@ -1,4 +1,5 @@
 import RcModule from '../../lib/RcModule';
+import { Module } from '../../lib/di';
 import actionTypes from './actionTypes';
 import moduleStatuses from '../../enums/moduleStatuses';
 import getRateLimiterReducer, {
@@ -14,6 +15,12 @@ const DEFAULT_ALERT_TTL = 5 * 1000;
  * @class
  * @description Rate limiter managing module
  */
+@Module({
+  deps: [
+    'Alert', 'Client', 'Environment', 'GlobalStorage',
+    { dep: 'RateLimiterOptions', optional: true }
+  ]
+})
 export default class RateLimiter extends RcModule {
   /**
    * @constructor
