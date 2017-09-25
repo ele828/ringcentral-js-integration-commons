@@ -1,4 +1,4 @@
-import { DIError } from '../utils/utils';
+import { DIError } from '../utils/error';
 
 /**
  * Module registry is used to store module metadata.

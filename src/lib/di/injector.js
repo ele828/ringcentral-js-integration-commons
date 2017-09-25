@@ -329,10 +329,9 @@ export class Injector {
 
   // TODO: support hierachical reset
   static reset() {
-    this.container.reset();
-    this.moduleRegistry.reset();
-    this.providerRegistry.reset();
-    this.universalProviders.clear();
+    this.pending.clear();
+    Registry.moduleRegistry.reset();
+    Registry.providerRegistry.reset();
   }
 
 }

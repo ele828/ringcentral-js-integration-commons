@@ -20,7 +20,6 @@ describe('Dependency Injection Specifications', () => {
     })
     class RecentMessage {
       constructor({
-        messageStore,
         enabled = false
       }) {
         this.enabled = enabled;

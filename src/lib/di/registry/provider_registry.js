@@ -1,4 +1,4 @@
-import { DIError } from '../utils/utils';
+import { DIError } from '../utils/error';
 
 /**
  * ProviderRegistry is a centralized structure for storing provider metadata.
