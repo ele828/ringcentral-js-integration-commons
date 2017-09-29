@@ -279,7 +279,7 @@ export default class Contacts extends RcModule {
       const response = await this._client
         .account()
         .extension(ctx.contact.id)
-        .profileImage('90x90')
+        .profileImage('195x195')
         .get();
       imageUrl = URL.createObjectURL(await response._response.blob());
       this.store.dispatch({
