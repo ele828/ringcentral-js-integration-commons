@@ -239,7 +239,7 @@ export default class Contacts extends RcModule {
     }
   }
 
-  getImageProfile(contact) {
+  getImageProfile(contact, useCache = true) {
     return new Promise((resolve) => {
       if (!contact || !contact.id || contact.type !== 'company' || !contact.hasProfileImage) {
         resolve(null);
@@ -248,6 +248,7 @@ export default class Contacts extends RcModule {
 
       const imageId = `${contact.type}${contact.id}`;
       if (
+        useCache &&
         this.profileImages[imageId] &&
         (Date.now() - this.profileImages[imageId].timestamp < this._avatarTtl)
       ) {
