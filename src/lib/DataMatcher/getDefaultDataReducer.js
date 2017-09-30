@@ -17,6 +17,7 @@ export default function getDefaultDataReducer(actionTypes) {
               ...newState[query],
               [name]: {
                 data: data[query],
+                _t: timestamp,
               },
             };
           } else {
