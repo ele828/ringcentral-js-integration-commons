@@ -47,6 +47,7 @@ describe('getDefaultDataReducer', () => {
         foo: {
           [name]: {
             data: data.foo,
+            _t: now,
           },
         },
       });
