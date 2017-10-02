@@ -16,13 +16,17 @@ describe('Dependency Injection Specifications', () => {
     @Module()
     class MessageStore {}
     @Module({
-      deps: ['MessageStore', { dep: 'RecentMessageOptions', optional: true }]
+      deps: ['MessageStore', 'ExistingOptions', { dep: 'RecentMessageOptions', optional: true }]
     })
     class RecentMessage {
       constructor({
-        enabled = false
+        enabled = false,
+        existingOptions,
+        recentMessageOptions
       }) {
         this.enabled = enabled;
+        this.existingOptions = existingOptions;
+        this.recentMessageOptions = recentMessageOptions;
       }
     }
 
@@ -30,7 +34,8 @@ describe('Dependency Injection Specifications', () => {
       providers: [
         { provide: 'MessageStore', useClass: MessageStore },
         { provide: 'RecentMessage', useClass: RecentMessage },
-        { provide: 'RecentMessageOptions', useValue: { enabled: true }, spread: true }
+        { provide: 'RecentMessageOptions', useValue: { enabled: true }, spread: true },
+        { provide: 'ExistingOptions', useExisting: 'RecentMessageOptions' }
       ]
     })
     class Root {
@@ -42,6 +47,8 @@ describe('Dependency Injection Specifications', () => {
     const instance = Injector.bootstrap(Root);
     expect(instance.recentMessage).to.be.an.instanceof(RecentMessage);
     expect(instance.recentMessage.enabled).to.be.true;
+    expect(instance.recentMessage.existingOptions)
+      .to.equal(instance.recentMessage.recentMessageOptions);
   });
 
   it('should inject modules', () => {
@@ -308,5 +315,83 @@ describe('Dependency Injection Specifications', () => {
       }
     }
     Injector.bootstrap(ChildModule);
+  });
+
+  it('should support @Library decorator', () => {
+    const testConfig = { test: 'test' };
+
+    @Library({
+      deps: [{ dep: 'Config', optional: true }]
+    })
+    class TestLibrary {
+      constructor({ config }) {
+        this.config = config;
+      }
+    }
+
+    @Module()
+    class TestModule extends TestLibrary {}
+
+    @ModuleFactory({
+      providers: [
+        { provide: 'TestModule', useClass: TestModule },
+        { provide: 'Config', useValue: testConfig, private: true }
+      ]
+    })
+    class TestModuleFactory {
+      constructor({ testModule }) { this.testModule = testModule; }
+    }
+    const testFactory = Injector.bootstrap(TestModuleFactory);
+    expect(testFactory.testModule.config).to.equal(testConfig);
+  });
+
+  it('should support hierarchical injector', () => {
+    @Module({
+      deps: ['Utils']
+    })
+    class TestModule {
+      constructor({
+        utils
+      }) {
+        this.utils = utils;
+      }
+    }
+
+    @Module()
+    class Strings {
+      toUpperCase(str) {
+        return String(str).toUpperCase();
+      }
+    }
+
+    @ModuleFactory({
+      providers: [{
+        provide: 'Strings', useClass: Strings
+      }]
+    })
+    class Utils {
+      constructor({
+        strings
+      }) {
+        this.strings = strings;
+      }
+    }
+
+    @ModuleFactory({
+      providers: [
+        { provide: 'Utils', useClass: Utils, private: true },
+        { provide: 'TestModule', useClass: TestModule },
+      ]
+    })
+    class Root {
+      constructor({
+        testModule
+      }) {
+        this.testModule = testModule;
+      }
+    }
+
+    const root = Injector.bootstrap(Root);
+    expect(root.testModule.utils.strings).to.be.an('object');
   });
 });

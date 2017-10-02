@@ -1,4 +1,4 @@
-import { DIError } from './utils/utils';
+import { DIError } from './utils/error';
 
 export default class Container {
   constructor() {
@@ -25,11 +25,11 @@ export default class Container {
     return this._map.set(token, metadata);
   }
 
-  nativeHas(token) {
+  localHas(token) {
     return this._map.has(token);
   }
 
-  nativeGet(token) {
+  localGet(token) {
     return this._map.get(token);
   }
 

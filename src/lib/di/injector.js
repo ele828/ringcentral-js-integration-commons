@@ -3,7 +3,7 @@ import { combineReducers } from 'redux';
 import RcModule from '../RcModule';
 import Container from './container';
 import Registry from './registry/registry';
-import { ValueProvider, ClassProvider, FactoryProvider } from './provider';
+import { ValueProvider, ClassProvider, ExistingProvider, FactoryProvider } from './provider';
 import { camelize } from './utils/utils';
 import { DIError, CircularDependencyError } from './utils/error';
 import {
@@ -45,12 +45,32 @@ export class Injector {
     if (!provider) {
       throw DIError('Expected valid provider instance', provider);
     }
-    // If provider exists in ancestor injector,
+
+    // Provider has already been resolved
+    if (container.localHas(provider.token)) return;
+
+    // useExisting provider needs to resolve existing providers instead of itself
+    if (provider instanceof ExistingProvider) {
+      if (pending.has(provider)) {
+        throw CircularDependencyError(pending, provider.token);
+      }
+      if (this.universalProviders.has(provider.useExisting)) {
+        pending.add(provider);
+        this.resolveModuleProvider(this.universalProviders.get(provider.useExisting));
+        pending.delete(provider);
+      }
+      if (container.localHas(provider.useExisting)) {
+        container.set(provider.token, container.localGet(provider.useExisting));
+      } else {
+        throw DIError(`ExistingProvider [${provider.useExisting}] is not found`);
+      }
+      return;
+    }
+
+    // If provider exists in ancestor injectors,
     // then it should create a reference to that provider locally.
     if (container.has(provider.token)) {
-      if (!container.nativeHas(provider.token)) {
-        container.set(provider.token, container.get(provider.token));
-      }
+      container.set(provider.token, container.get(provider.token));
       return;
     }
     if (!this.universalProviders.has(provider.token)) {
@@ -93,6 +113,9 @@ export class Injector {
       } else if (this.providerRegistry.has(provider.token)) {
         // Depends on moduleFactory provider
         this.resolveModuleFactoryProvider(provider);
+      } else {
+        throw DIError(
+          `Provider [${provider.token}] can not be resolved, module is not found`);
       }
     }
   }
@@ -187,8 +210,8 @@ export class Injector {
    * @param {Class} RootClass
    */
   _bootstrap(RootClass) {
-    if (this.container.nativeHas(RootClass.name)) {
-      return this.container.nativeGet(RootClass.name).getInstance();
+    if (this.container.localHas(RootClass.name)) {
+      return this.container.localGet(RootClass.name).getInstance();
     }
 
     // Implement inheritance for ModuleFactory
@@ -212,7 +235,7 @@ export class Injector {
         universalProviders.set(
           provider.provide,
           // TODO: support useExisting to be an module token
-          new ClassProvider(provider.provide, provider.useExisting, null, provider.private)
+          new ExistingProvider(provider.provide, provider.useExisting, provider.private)
         );
       } else if (isFactoryProvider(provider)) {
         universalProviders.set(
@@ -224,10 +247,6 @@ export class Injector {
         throw DIError('Expected valid provider', provider);
       }
     }
-
-    /**
-     * TODO: Perform metadata normalization
-     */
 
     // Resolve dependencies and create instances of provides
     const container = this.container;
@@ -309,6 +328,7 @@ export class Injector {
 
   /**
    * Get specific provider by injector.
+   * Will search for providers from parentInjector.
    * @param {String} token
    */
   get(token) {

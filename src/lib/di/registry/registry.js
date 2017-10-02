@@ -1,6 +1,6 @@
 import ModuleRegistry from './module_registry';
 import ProviderRegistry from './provider_registry';
-import { getParentClass } from '../utils/utils';
+import { getParentClass, assert } from '../utils/utils';
 import { DIError } from '../utils/error';
 import { isEmpty, isFunction, isArray, isObject } from '../utils/is_type';
 
@@ -8,42 +8,63 @@ export default class Registry {
   static moduleRegistry = new ModuleRegistry();
   static providerRegistry = new ProviderRegistry();
   static registerModule(klass, metadata) {
-    if (!klass || !isFunction(klass)) {
-      throw DIError('Expected module to be an Class');
-    }
-    const moduleName = klass.name;
-    if (metadata && !isObject(metadata)) {
-      throw DIError('Expected parameter of @Module() to be an Object');
+    assert(
+      klass && isFunction(klass),
+      'Expected module to be an Class'
+    );
+    assert(
+      !isEmpty(klass.name) && klass.name !== '_class',
+      'Expected class name to be a non-empty string'
+    );
+    if (metadata) {
+      assert(
+        isObject(metadata),
+        'Expected parameter of @Module() to be an Object'
+      );
+      if (metadata.deps) {
+        assert(
+          isArray(metadata.deps),
+          `Expected deps to be an Array: [${klass.name}]
+          ${JSON.stringify(metadata)}`
+        );
+      }
     }
     if (!metadata || Object.keys(metadata).length <= 0) {
       metadata = null;
     }
-    if (metadata !== null && !isArray(metadata.deps)) {
-      throw DIError(
-        `Expected deps to be an Array: [${klass.name}]
-        ${JSON.stringify(metadata)}`
-      );
-    }
+    const moduleName = klass.name;
     this.moduleRegistry.set(moduleName, metadata, klass);
   }
 
   static registerModuleProvider(klass, metadata) {
-    if (!klass || !isFunction(klass)) {
-      throw DIError('Expected moduleFactory to be an Class');
-    }
+    assert(
+      klass && isFunction(klass),
+      'Expected moduleFactory to be an Class'
+    );
+
     const moduleFactoryName = klass.name;
-    if (metadata && !isObject(metadata)) {
-      throw DIError('Expected parameter of @ModuleFactory() to be an Object');
-    }
-    if (metadata && metadata.providers && !isArray(metadata.providers)) {
-      throw DIError('Expected providers in @ModuleFactory() to be an Array');
-    }
-    if (!metadata) {
+    assert(
+      !isEmpty(moduleFactoryName),
+      'Expected the name of module to be a non-empty string'
+    );
+    if (metadata) {
+      assert(
+        isObject(metadata),
+        'Expected parameter of @ModuleFactory() to be an Object'
+      );
+      if (metadata.providers && !isArray(metadata.providers)) {
+        assert(
+          isArray(metadata.providers),
+          'Expected providers in @ModuleFactory() to be an Array'
+        );
+      }
+    } else {
       metadata = null;
     }
     // TODO: validate module providers
     // useValue should be object or number or string, etc.
     // spread can only be used if useValue is an object.
+    // Not to check it for now, maybe cause performance issue
     this.providerRegistry.set(moduleFactoryName, metadata);
   }
 
@@ -95,16 +116,18 @@ export default class Registry {
     }
     const moduleMetadata = this.moduleRegistry.get(currentClass.name);
     const hasDeps = moduleMetadata && isArray(moduleMetadata.deps);
-    if (hasDeps) {
-      moduleMetadata.deps = this.mergeDependencies(
-        moduleMetadata.deps,
-        !isEmpty(parentClass.name) ? this.resolveDependencyInheritance(parentClass) : []
-      );
-      // Update parent class metadata
-      this.moduleRegistry.resolve(currentClass.name, moduleMetadata);
-      return moduleMetadata.deps;
-    }
-    return [];
+    const deps = this.mergeDependencies(
+      hasDeps ? moduleMetadata.deps : [],
+      !isEmpty(parentClass.name) ? this.resolveDependencyInheritance(parentClass) : []
+    );
+    // Update parent class metadata
+    this.moduleRegistry.resolve(
+      currentClass.name,
+      Object.assign({}, moduleMetadata, {
+        deps
+      })
+    );
+    return deps;
   }
 
   /**
