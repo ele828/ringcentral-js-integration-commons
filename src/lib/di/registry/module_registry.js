@@ -23,7 +23,7 @@ export default class ModuleRegistry {
   }
 
   resolved(moduleName) {
-    return !!this._map.get(moduleName).resovled;
+    return !!this._map.get(moduleName).resolved;
   }
 
   set(moduleName, metadata, klass) {

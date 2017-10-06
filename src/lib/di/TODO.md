@@ -24,13 +24,15 @@
 - [X] Ensure overwriting order
 - [X] Check value validation process in @Module and @ModuleFactory
 - [ ] Error handling - one failure of module injection in prod env should not affect other modules
+- [ ] Implement loose naming strategy (use class reference as key instead of its name)
 - [ ] Write Unit Test
+- [ ] Write markdown documents
 - [ ] Integrate with commons project
       - [X] Add module dependency definitions
       - [X] Add basic module factory
       - [ ] Change defaultReducer and defaultProxyReducer to null
       - [ ] Make sure all tests in commons still work
+      - [ ] Make sure all modules still work with decorators
 - [ ] Integrate with googlechrome
 -   - [ ] Needs to design Proxy Module Factory
-- [ ] [Nice to have] Implement loose naming strategy (use class reference as key instead of its name)
 - [ ] [Maybe] Implement module initialization lifecycle

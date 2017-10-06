@@ -8,7 +8,7 @@ import Registry from '../registry/registry';
 export default function ModuleFactory(metadata) {
   /* eslint-disable */
   return function (constructor) {
-    Registry.registerModuleProvider(constructor, metadata);
+    Registry.registerModuleFactory(constructor, metadata);
     return constructor;
   };
 }

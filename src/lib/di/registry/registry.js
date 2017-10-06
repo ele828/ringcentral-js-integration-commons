@@ -7,10 +7,11 @@ import { isEmpty, isFunction, isArray, isObject } from '../utils/is_type';
 export default class Registry {
   static moduleRegistry = new ModuleRegistry();
   static providerRegistry = new ProviderRegistry();
+
   static registerModule(klass, metadata) {
     assert(
-      klass && isFunction(klass),
-      'Expected module to be an Class'
+      isFunction(klass),
+      'Expected module to be a Class'
     );
     assert(
       !isEmpty(klass.name) && klass.name !== '_class',
@@ -36,17 +37,13 @@ export default class Registry {
     this.moduleRegistry.set(moduleName, metadata, klass);
   }
 
-  static registerModuleProvider(klass, metadata) {
+  static registerModuleFactory(klass, metadata) {
     assert(
       klass && isFunction(klass),
-      'Expected moduleFactory to be an Class'
+      'Expected moduleFactory to be a Class'
     );
 
     const moduleFactoryName = klass.name;
-    assert(
-      !isEmpty(moduleFactoryName),
-      'Expected the name of module to be a non-empty string'
-    );
     if (metadata) {
       assert(
         isObject(metadata),
@@ -74,24 +71,25 @@ export default class Registry {
    * ModuleFactory can only inherit from ModuleFactory.
    * @param {Class} currentClass
    */
-  static processModuleFactoryInheritance(currentClass) {
+  static resolveInheritedModuleFactory(currentClass) {
     const parentClass = getParentClass(currentClass);
     if (!this.providerRegistry.has(currentClass.name)) return [];
     else if (this.providerRegistry.resolved(currentClass.name)) {
-      return this.providerRegistry.get(currentClass.name);
+      return this.providerRegistry.get(currentClass.name).providers;
     }
     const moduleProviderMetadata = this.providerRegistry.get(currentClass.name);
     const hasProviders = moduleProviderMetadata && isArray(moduleProviderMetadata.providers);
-    if (hasProviders) {
-      const providers = moduleProviderMetadata.providers;
-      const providerMetadata = this.mergeProviders(
-        providers,
-        !isEmpty(parentClass.name) ? this.processModuleFactoryInheritance(parentClass) : []
-      );
-      this.providerRegistry.resolve(currentClass.name, providerMetadata);
-      return providerMetadata;
-    }
-    return [];
+    const providerMetadata = this.mergeProviders(
+      hasProviders ? moduleProviderMetadata.providers : [],
+      !isEmpty(parentClass.name) ? this.resolveInheritedModuleFactory(parentClass) : []
+    );
+    this.providerRegistry.resolve(
+      currentClass.name,
+      Object.assign({}, moduleProviderMetadata, {
+        providers: providerMetadata
+      })
+    );
+    return providerMetadata;
   }
 
   /**
@@ -99,26 +97,27 @@ export default class Registry {
    * Module can inherit from Module and Library.
    * @param {String} moduleName
    */
-  static processModuleLibraryInheritance(moduleName) {
+  static resolveInheritedDependencies(moduleName) {
     const klass = this.moduleRegistry.getClass(moduleName);
-    this.resolveDependencyInheritance(klass);
+    return this._resolveInheritedDependencies(klass);
   }
 
   /**
    * Resolve the inheritance relationship of module dependencies.
    * @param {Class} currentClass
+   * @return {Array} deps - resolved deps
    */
-  static resolveDependencyInheritance(currentClass) {
+  static _resolveInheritedDependencies(currentClass) {
     const parentClass = getParentClass(currentClass);
     if (!this.moduleRegistry.has(currentClass.name)) return [];
     else if (this.moduleRegistry.resolved(currentClass.name)) {
-      return this.moduleRegistry.get(currentClass.name);
+      return this.moduleRegistry.get(currentClass.name).deps;
     }
     const moduleMetadata = this.moduleRegistry.get(currentClass.name);
     const hasDeps = moduleMetadata && isArray(moduleMetadata.deps);
     const deps = this.mergeDependencies(
       hasDeps ? moduleMetadata.deps : [],
-      !isEmpty(parentClass.name) ? this.resolveDependencyInheritance(parentClass) : []
+      !isEmpty(parentClass.name) ? this._resolveInheritedDependencies(parentClass) : []
     );
     // Update parent class metadata
     this.moduleRegistry.resolve(
@@ -157,12 +156,18 @@ export default class Registry {
     }
 
     // Merge child providers into parent providers
+    // Only support object shallow merge
     for (let p of baseProvider) {
       // useValue and don't overwrite parent values
       const pp = merged.get(p.provide);
       if (pp && p.useValue && p.merge) {
         if (!pp.useValue) {
           throw DIError(`Expected parent provider of [${p.provide}] to be a value provider`);
+        }
+        if (!isObject(pp.useValue)) {
+          throw DIError(
+            `Expected parent provider of [${p.provide}] to be an Object`
+          );
         }
         p.useValue = Object.assign({}, pp.useValue, p.useValue);
         merged.set(p.provide, Object.assign({}, pp, p));
@@ -195,7 +200,7 @@ export default class Registry {
       if (!isObject(base)) {
         base = { dep: base, optional: false };
       }
-      if (merged.has(base.dep) && base.dep !== merged.get(base.dep).dep) {
+      if (merged.has(base.dep) && base.optional !== merged.get(base.dep).optional) {
         merged.set(base.dep, { dep: base.dep, optional: false });
       } else {
         merged.set(base.dep, base);

@@ -7,7 +7,7 @@ import {
   ModuleFactory
 } from '../';
 
-describe('Dependency Injection Specifications', () => {
+describe('Dependency Injection Features', () => {
   beforeEach(() => {
     Injector.reset();
   });
@@ -16,7 +16,11 @@ describe('Dependency Injection Specifications', () => {
     @Module()
     class MessageStore {}
     @Module({
-      deps: ['MessageStore', 'ExistingOptions', { dep: 'RecentMessageOptions', optional: true }]
+      deps: [
+        'MessageStore',
+        'ExistingOptions',
+        { dep: 'RecentMessageOptions', optional: true }
+      ]
     })
     class RecentMessage {
       constructor({
@@ -245,9 +249,9 @@ describe('Dependency Injection Specifications', () => {
 
   it('should inheritant deps correctly', () => {
     @Module({
-      deps: [{
-        dep: 'ModuleOptions', optional: true
-      }]
+      deps: [
+        { dep: 'ModuleOptions', optional: true }
+      ]
     })
     class ModuleA {}
 
@@ -394,4 +398,6 @@ describe('Dependency Injection Specifications', () => {
     const root = Injector.bootstrap(Root);
     expect(root.testModule.utils.strings).to.be.an('object');
   });
+
+  // TODO: private: true
 });

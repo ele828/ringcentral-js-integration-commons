@@ -1,18 +1,11 @@
 import { combineReducers } from 'redux';
-
 import RcModule from '../RcModule';
 import Container from './container';
 import Registry from './registry/registry';
 import { ValueProvider, ClassProvider, ExistingProvider, FactoryProvider } from './provider';
 import { camelize } from './utils/utils';
 import { DIError, CircularDependencyError } from './utils/error';
-import {
-  isObject,
-  isValueProvider,
-  isStaticClassProvider,
-  isExistingProvider,
-  isFactoryProvider,
-} from './utils/is_type';
+import { isObject, isValueProvider, isStaticClassProvider, isExistingProvider, isFactoryProvider } from './utils/is_type';
 
 const REDUCER_LITERAL = '_reducer';
 const PROXY_REDUCER_LITERAL = '_proxyReducer';
@@ -27,6 +20,7 @@ export class Injector {
   static pending = new Set();
 
   constructor() {
+    this.targetClass = null;
     this.parentInjector = null;
     this.moduleRegistry = Registry.moduleRegistry;
     this.providerRegistry = Registry.providerRegistry;
@@ -79,6 +73,8 @@ export class Injector {
       }
     }
     if (provider instanceof ValueProvider) {
+      // TODO: this can be optimized to use properties to track the spread flag
+      // so that we don't need to create a new object for spread feature
       const value = provider.spread
         ? { value: provider.value, spread: provider.spread }
         : provider.value;
@@ -94,10 +90,10 @@ export class Injector {
       container.set(provider.token, provider);
       pending.delete(provider.token);
     } else if (provider instanceof ClassProvider) {
+      // TODO: may resolve providers in other scope
+      // need to avoid using name as registry key
       if (this.moduleRegistry.has(provider.klass.name)) {
-        Registry.processModuleLibraryInheritance(provider.klass.name);
-        const moduleMetadata = this.moduleRegistry.get(provider.klass.name);
-        const deps = moduleMetadata !== null ? moduleMetadata.deps : [];
+        const deps = Registry.resolveInheritedDependencies(provider.klass.name);
         const Klass = provider.klass;
         if (!deps || deps.length === 0) {
           provider.setInstance(new Klass());
@@ -184,6 +180,10 @@ export class Injector {
   resolveModuleFactoryProvider(providerInstance) {
     if (!this.container.has(providerInstance.token)) {
       Injector.pending.add(providerInstance.token);
+      // Prevent reference to itself
+      if (providerInstance.klass === this.targetClass) {
+        throw CircularDependencyError(Injector.pending, this.targetClass.name);
+      }
       const instance = Injector.bootstrap(providerInstance.klass, this);
       providerInstance.setInstance(instance);
       this.container.set(
@@ -210,12 +210,13 @@ export class Injector {
    * @param {Class} RootClass
    */
   _bootstrap(RootClass) {
+    this.targetClass = RootClass;
     if (this.container.localHas(RootClass.name)) {
       return this.container.localGet(RootClass.name).getInstance();
     }
 
     // Implement inheritance for ModuleFactory
-    const providerMetadata = Registry.processModuleFactoryInheritance(RootClass);
+    const providerMetadata = Registry.resolveInheritedModuleFactory(RootClass);
 
     // Iterate through all provider metadata
     // Discard providers in parent class overwritten by children
@@ -303,10 +304,7 @@ export class Injector {
         Object.defineProperty(rootClassInstance, REDUCER_LITERAL, {
           value: combineReducers({
             ...reducers,
-            lastAction: (state = null, action) => {
-              // console.log(action);
-              return action;
-            }
+            lastAction: (state = null, action) => action
           })
         });
 
@@ -318,11 +316,6 @@ export class Injector {
       }
     }
 
-    // Regard root class as a provider
-    this.container.set(
-      RootClass.name,
-      new ClassProvider(RootClass.name, rootClassInstance, null, false)
-    );
     return rootClassInstance;
   }
 
