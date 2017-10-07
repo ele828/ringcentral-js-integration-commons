@@ -13,10 +13,6 @@ export default class Registry {
       isFunction(klass),
       'Expected module to be a Class'
     );
-    assert(
-      !isEmpty(klass.name) && klass.name !== '_class',
-      'Expected class name to be a non-empty string'
-    );
     if (metadata) {
       assert(
         isObject(metadata),
@@ -33,8 +29,7 @@ export default class Registry {
     if (!metadata || Object.keys(metadata).length <= 0) {
       metadata = null;
     }
-    const moduleName = klass.name;
-    this.moduleRegistry.set(moduleName, metadata, klass);
+    this.moduleRegistry.set(klass, metadata);
   }
 
   static registerModuleFactory(klass, metadata) {
@@ -43,7 +38,6 @@ export default class Registry {
       'Expected moduleFactory to be a Class'
     );
 
-    const moduleFactoryName = klass.name;
     if (metadata) {
       assert(
         isObject(metadata),
@@ -62,7 +56,7 @@ export default class Registry {
     // useValue should be object or number or string, etc.
     // spread can only be used if useValue is an object.
     // Not to check it for now, maybe cause performance issue
-    this.providerRegistry.set(moduleFactoryName, metadata);
+    this.providerRegistry.set(klass, metadata);
   }
 
    /**
@@ -73,18 +67,18 @@ export default class Registry {
    */
   static resolveInheritedModuleFactory(currentClass) {
     const parentClass = getParentClass(currentClass);
-    if (!this.providerRegistry.has(currentClass.name)) return [];
-    else if (this.providerRegistry.resolved(currentClass.name)) {
-      return this.providerRegistry.get(currentClass.name).providers;
+    if (!this.providerRegistry.has(currentClass)) return [];
+    else if (this.providerRegistry.resolved(currentClass)) {
+      return this.providerRegistry.get(currentClass).providers;
     }
-    const moduleProviderMetadata = this.providerRegistry.get(currentClass.name);
+    const moduleProviderMetadata = this.providerRegistry.get(currentClass);
     const hasProviders = moduleProviderMetadata && isArray(moduleProviderMetadata.providers);
     const providerMetadata = this.mergeProviders(
       hasProviders ? moduleProviderMetadata.providers : [],
       !isEmpty(parentClass.name) ? this.resolveInheritedModuleFactory(parentClass) : []
     );
     this.providerRegistry.resolve(
-      currentClass.name,
+      currentClass,
       Object.assign({}, moduleProviderMetadata, {
         providers: providerMetadata
       })
@@ -95,33 +89,24 @@ export default class Registry {
   /**
    * Process the inheritance relationship of Module and Library.
    * Module can inherit from Module and Library.
-   * @param {String} moduleName
-   */
-  static resolveInheritedDependencies(moduleName) {
-    const klass = this.moduleRegistry.getClass(moduleName);
-    return this._resolveInheritedDependencies(klass);
-  }
-
-  /**
-   * Resolve the inheritance relationship of module dependencies.
    * @param {Class} currentClass
    * @return {Array} deps - resolved deps
    */
-  static _resolveInheritedDependencies(currentClass) {
+  static resolveInheritedDependencies(currentClass) {
     const parentClass = getParentClass(currentClass);
-    if (!this.moduleRegistry.has(currentClass.name)) return [];
-    else if (this.moduleRegistry.resolved(currentClass.name)) {
-      return this.moduleRegistry.get(currentClass.name).deps;
+    if (!this.moduleRegistry.has(currentClass)) return [];
+    else if (this.moduleRegistry.resolved(currentClass)) {
+      return this.moduleRegistry.get(currentClass).deps;
     }
-    const moduleMetadata = this.moduleRegistry.get(currentClass.name);
+    const moduleMetadata = this.moduleRegistry.get(currentClass);
     const hasDeps = moduleMetadata && isArray(moduleMetadata.deps);
     const deps = this.mergeDependencies(
       hasDeps ? moduleMetadata.deps : [],
-      !isEmpty(parentClass.name) ? this._resolveInheritedDependencies(parentClass) : []
+      !isEmpty(parentClass.name) ? this.resolveInheritedDependencies(parentClass) : []
     );
     // Update parent class metadata
     this.moduleRegistry.resolve(
-      currentClass.name,
+      currentClass,
       Object.assign({}, moduleMetadata, {
         deps
       })

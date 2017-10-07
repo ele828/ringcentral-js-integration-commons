@@ -98,6 +98,38 @@ describe('Dependency Injection Features', () => {
     expect(instance.recentMessage.messageStore).to.be.an.instanceof(MessageStore);
   });
 
+  it('dependency name should be consistent with provider token', () => {
+    @Module({
+      deps: ['Module']
+    })
+    class A {
+      constructor({ module }) {
+        this.module = module;
+      }
+    }
+
+    @Module()
+    class B {}
+
+    @ModuleFactory({
+      providers: [
+        { provide: 'Module', useClass: B },
+        { provide: 'TestModule', useClass: A }
+      ]
+    })
+    class Root {
+      constructor({ module, testModule }) {
+        this.module = module;
+        this.testModule = testModule;
+      }
+    }
+
+    const instance = Injector.bootstrap(Root);
+    expect(instance.testModule.module).to.be.instanceOf(B);
+    expect(instance.testModule).to.be.instanceOf(A);
+    expect(instance.module).to.be.instanceOf(B);
+  });
+
   it('should handle circular dependency', () => {
     function circular() {
       @Module({
@@ -126,6 +158,65 @@ describe('Dependency Injection Features', () => {
       Injector.bootstrap(RootModule);
     }
     expect(circular).to.throw();
+  });
+
+  it('should support private provider injection', () => {
+    @Module()
+    class FakeModule {}
+    @Module()
+    class FakeModule1 {}
+
+    @ModuleFactory({
+      providers: [
+        { provide: 'FakeModule1', useClass: FakeModule1 },
+        { provide: 'FakeModule', useClass: FakeModule, private: true }
+      ]
+    })
+    class RootModule {
+      constructor({ fakeModule, fakeModule1 }) {
+        this.fakeModule = fakeModule;
+        this.fakeModule1 = fakeModule1;
+      }
+    }
+
+    const instance = Injector.bootstrap(RootModule);
+    expect(instance.fakeModule).to.be.undefined;
+    expect(instance.fakeModule1).to.be.instanceOf(FakeModule1);
+  });
+
+  it('should also inject injector into module', () => {
+    @Module({
+      deps: ['FakeModule']
+    })
+    class TestModule {
+      constructor({ injector }) {
+        this.injector = injector;
+      }
+    }
+
+    @Module()
+    class FakeModule {
+      constructor({ injector }) {
+        this.injector = injector;
+      }
+    }
+
+    @ModuleFactory({
+      providers: [
+        { provide: 'FakeModule', useClass: FakeModule },
+        { provide: 'TestModule', useClass: TestModule }
+      ]
+    })
+    class RootModule {
+      constructor({ fakeModule, testModule }) {
+        this.fakeModule = fakeModule;
+        this.testModule = testModule;
+      }
+    }
+
+    const instance = Injector.bootstrap(RootModule);
+    expect(instance.fakeModule.injector).to.be.instanceOf(Injector);
+    expect(instance.testModule.injector).to.be.instanceOf(Injector);
   });
 
   it('should support ModuleFactory inheritance', () => {
@@ -349,7 +440,7 @@ describe('Dependency Injection Features', () => {
     expect(testFactory.testModule.config).to.equal(testConfig);
   });
 
-  it('should support hierarchical injector', () => {
+  it('should support hierarchical injector and reverse resolve', () => {
     @Module({
       deps: ['Utils']
     })
@@ -373,7 +464,7 @@ describe('Dependency Injection Features', () => {
         provide: 'Strings', useClass: Strings
       }]
     })
-    class Utils {
+    class Util {
       constructor({
         strings
       }) {
@@ -383,8 +474,9 @@ describe('Dependency Injection Features', () => {
 
     @ModuleFactory({
       providers: [
-        { provide: 'Utils', useClass: Utils, private: true },
+        // Utils should be reverse resolved by modules
         { provide: 'TestModule', useClass: TestModule },
+        { provide: 'Utils', useClass: Util, private: true }
       ]
     })
     class Root {
@@ -399,5 +491,11 @@ describe('Dependency Injection Features', () => {
     expect(root.testModule.utils.strings).to.be.an('object');
   });
 
-  // TODO: private: true
+  it('should make sure module will not be affected by decorator', () => {
+    @Module()
+    class TestModule {}
+
+    @Library()
+    class TestLibrary {}
+  });
 });

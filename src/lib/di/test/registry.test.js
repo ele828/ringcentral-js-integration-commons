@@ -15,7 +15,7 @@ describe('Registry', () => {
         deps: ['A', { dep: 'B', optional: false }, { dep: 'C', optional: true }]
       };
       Registry.registerModule(Module, metadata);
-      expect(Registry.moduleRegistry.get('Module')).to.equal(metadata);
+      expect(Registry.moduleRegistry.get(Module)).to.equal(metadata);
     });
 
     it('should throw when module is not a class', () => {
@@ -35,7 +35,7 @@ describe('Registry', () => {
     it('should support empty object without deps', () => {
       class Module {}
       Registry.registerModule(Module, {});
-      expect(Registry.moduleRegistry.get('Module')).to.be.null;
+      expect(Registry.moduleRegistry.get(Module)).to.be.null;
     });
 
     it('should throw when deps is not an Array', () => {
@@ -54,7 +54,7 @@ describe('Registry', () => {
         providers: []
       };
       Registry.registerModuleFactory(ModuleFactory, metadata);
-      expect(Registry.providerRegistry.get(ModuleFactory.name)).to.equal(metadata);
+      expect(Registry.providerRegistry.get(ModuleFactory)).to.equal(metadata);
     });
 
     it('should throw when moduleFactory is not a class', () => {
@@ -404,8 +404,8 @@ describe('Registry', () => {
     it('should return empty array when no metadata is found', () => {
       class A {}
       Registry.registerModule(A, null);
-      Registry._resolveInheritedDependencies(A);
-      const m = Registry.moduleRegistry.get('A');
+      Registry.resolveInheritedDependencies(A);
+      const m = Registry.moduleRegistry.get(A);
       expect(m).to.deep.equal({
         deps: []
       });
@@ -415,7 +415,7 @@ describe('Registry', () => {
       class A {}
       const metadata = { deps: ['A', 'C'] };
       Registry.registerModule(A, metadata);
-      const deps = Registry._resolveInheritedDependencies(A);
+      const deps = Registry.resolveInheritedDependencies(A);
       expect(deps).have.deep.members([
         {
           dep: 'A',
@@ -433,8 +433,8 @@ describe('Registry', () => {
       const metadata = { deps: ['A', 'C'] };
       Registry.registerModule(A, metadata);
       const stub = sinon.stub(Registry, 'mergeDependencies').callsFake(() => null);
-      Registry._resolveInheritedDependencies(A);
-      Registry._resolveInheritedDependencies(A);
+      Registry.resolveInheritedDependencies(A);
+      Registry.resolveInheritedDependencies(A);
       expect(stub.calledOnce).to.be.true;
       stub.restore();
     });
@@ -446,7 +446,7 @@ describe('Registry', () => {
       Registry.registerModule(A, { deps: ['A'] });
       Registry.registerModule(B, { deps: ['B'] });
 
-      const deps = Registry._resolveInheritedDependencies(B);
+      const deps = Registry.resolveInheritedDependencies(B);
       expect(deps).have.deep.members([
         { dep: 'A', optional: false },
         { dep: 'B', optional: false }
@@ -462,7 +462,7 @@ describe('Registry', () => {
       Registry.registerModule(B, { deps: ['B'] });
       Registry.registerModule(C, { deps: ['C'] });
 
-      const deps = Registry._resolveInheritedDependencies(C);
+      const deps = Registry.resolveInheritedDependencies(C);
       expect(deps).have.deep.members([
         { dep: 'A', optional: false },
         { dep: 'B', optional: false },
@@ -481,7 +481,7 @@ describe('Registry', () => {
       Registry.registerModule(C, { deps: ['C'] });
       Registry.registerModule(D, null);
 
-      const deps = Registry._resolveInheritedDependencies(D);
+      const deps = Registry.resolveInheritedDependencies(D);
       expect(deps).have.deep.members([
         { dep: 'A', optional: false },
         { dep: 'C', optional: false },
@@ -497,7 +497,7 @@ describe('Registry', () => {
       Registry.registerModule(B, null);
       Registry.registerModule(C, { deps: [{ dep: 'A', optional: true }] });
 
-      const deps = Registry._resolveInheritedDependencies(C);
+      const deps = Registry.resolveInheritedDependencies(C);
       expect(deps).have.deep.members([
         { dep: 'A', optional: false }
       ]);

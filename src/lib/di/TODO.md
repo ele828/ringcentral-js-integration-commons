@@ -23,9 +23,8 @@
 - [X] Support internal module provider (private)
 - [X] Ensure overwriting order
 - [X] Check value validation process in @Module and @ModuleFactory
-- [ ] Error handling - one failure of module injection in prod env should not affect other modules
-- [ ] Implement loose naming strategy (use class reference as key instead of its name)
-- [ ] Write Unit Test
+- [X] Implement loose naming strategy (use class reference as key instead of its name)
+- [X] Write Unit Test
 - [ ] Write markdown documents
 - [ ] Integrate with commons project
       - [X] Add module dependency definitions
@@ -35,4 +34,5 @@
       - [ ] Make sure all modules still work with decorators
 - [ ] Integrate with googlechrome
 -   - [ ] Needs to design Proxy Module Factory
+- [ ] Error handling - one failure of module injection in prod env should not affect other modules
 - [ ] [Maybe] Implement module initialization lifecycle

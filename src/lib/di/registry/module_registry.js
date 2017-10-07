@@ -5,48 +5,40 @@ import { DIError } from '../utils/error';
  */
 export default class ModuleRegistry {
   constructor() {
+    // class reference -> metadata
     this._map = new Map();
   }
 
-  get(moduleName) {
-    if (!this._map.has(moduleName)) {
-      throw DIError(`Cannot find module [${moduleName}] in ModuleRegistry`);
+  get(moduleRef) {
+    if (!this._map.has(moduleRef)) {
+      throw DIError(`Cannot find module [${moduleRef.name}] in ModuleRegistry`);
     }
-    return this._map.get(moduleName).metadata;
+    return this._map.get(moduleRef).metadata;
   }
 
-  getClass(moduleName) {
-    if (!this._map.has(moduleName)) {
-      throw DIError(`Cannot find module [${moduleName}] in ModuleRegistry`);
-    }
-    return this._map.get(moduleName).klass;
+  resolved(moduleRef) {
+    return this._map.get(moduleRef).resolved;
   }
 
-  resolved(moduleName) {
-    return !!this._map.get(moduleName).resolved;
+  set(moduleRef, metadata) {
+    if (this._map.has(moduleRef)) {
+      throw DIError(`Can only register module [${moduleRef.name}] once`);
+    }
+    return this._map.set(moduleRef, { metadata, resolved: false });
   }
 
-  set(moduleName, metadata, klass) {
-    if (this._map.has(moduleName)) {
-      throw DIError(`Can only register module [${moduleName}] once`);
+  resolve(moduleRef, metadata) {
+    if (!this._map.has(moduleRef)) {
+      throw DIError(`Cannot resolve module metadata [${moduleRef}]: module is not found`);
     }
-    return this._map.set(moduleName, { klass, metadata });
-  }
-
-  resolve(moduleName, metadata) {
-    if (!this._map.has(moduleName)) {
-      throw DIError(`Cannot resolve module metadata [${moduleName}]: module is not found`);
-    }
-    const originalMetadata = this._map.get(moduleName);
-    this._map.set(moduleName, {
+    this._map.set(moduleRef, {
       metadata,
-      klass: originalMetadata.klass,
       resolved: true
     });
   }
 
-  has(moduleName) {
-    return this._map.has(moduleName);
+  has(moduleRef) {
+    return this._map.has(moduleRef);
   }
 
   entries() {

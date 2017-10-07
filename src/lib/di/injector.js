@@ -90,23 +90,19 @@ export class Injector {
       container.set(provider.token, provider);
       pending.delete(provider.token);
     } else if (provider instanceof ClassProvider) {
-      // TODO: may resolve providers in other scope
-      // need to avoid using name as registry key
-      if (this.moduleRegistry.has(provider.klass.name)) {
-        const deps = Registry.resolveInheritedDependencies(provider.klass.name);
+      if (this.moduleRegistry.has(provider.klass)) {
+        const deps = Registry.resolveInheritedDependencies(provider.klass) || [];
         const Klass = provider.klass;
-        if (!deps || deps.length === 0) {
-          provider.setInstance(new Klass());
-          container.set(provider.token, provider);
-          return;
-        }
         pending.add(provider.token);
         const dependencies = this.resolveDependencies(deps, pending);
         const instance = new Klass(dependencies);
         provider.setInstance(instance);
         container.set(provider.token, provider);
         pending.delete(provider.token);
-      } else if (this.providerRegistry.has(provider.token)) {
+      } else if (
+        provider instanceof ClassProvider &&
+        this.providerRegistry.has(provider.klass)
+      ) {
         // Depends on moduleFactory provider
         this.resolveModuleFactoryProvider(provider);
       } else {
@@ -216,12 +212,12 @@ export class Injector {
     }
 
     // Implement inheritance for ModuleFactory
-    const providerMetadata = Registry.resolveInheritedModuleFactory(RootClass);
+    const providersMetadata = Registry.resolveInheritedModuleFactory(RootClass);
 
     // Iterate through all provider metadata
     // Discard providers in parent class overwritten by children
     const universalProviders = this.universalProviders;
-    for (const provider of providerMetadata) {
+    for (const provider of providersMetadata) {
       if (isValueProvider(provider)) {
         universalProviders.set(
           provider.provide,
@@ -235,7 +231,6 @@ export class Injector {
       } else if (isExistingProvider(provider)) {
         universalProviders.set(
           provider.provide,
-          // TODO: support useExisting to be an module token
           new ExistingProvider(provider.provide, provider.useExisting, provider.private)
         );
       } else if (isFactoryProvider(provider)) {
@@ -254,7 +249,10 @@ export class Injector {
     for (const provider of this.universalProviders.values()) {
       if (!container.has(provider.provide)) {
         // Provider is a module factory
-        if (this.providerRegistry.has(provider.token)) {
+        if (
+          provider instanceof ClassProvider &&
+          this.providerRegistry.has(provider.klass)
+        ) {
           this.resolveModuleFactoryProvider(provider);
         } else {
           this.resolveModuleProvider(provider);
