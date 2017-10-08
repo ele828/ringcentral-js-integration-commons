@@ -3,7 +3,7 @@ import RcModule from '../RcModule';
 import Container from './container';
 import Registry from './registry/registry';
 import { ValueProvider, ClassProvider, ExistingProvider, FactoryProvider } from './provider';
-import { camelize } from './utils/utils';
+import { assert, camelize } from './utils/utils';
 import { DIError, CircularDependencyError } from './utils/error';
 import { isObject, isValueProvider, isStaticClassProvider, isExistingProvider, isFactoryProvider } from './utils/is_type';
 
@@ -36,9 +36,7 @@ export class Injector {
    */
   resolveModuleProvider(provider, pending = Injector.pending) {
     const container = this.container;
-    if (!provider) {
-      throw DIError('Expected valid provider instance', provider);
-    }
+    assert(provider, 'Expected valid provider instance', provider);
 
     // Provider has already been resolved
     if (container.localHas(provider.token)) return;
@@ -107,7 +105,8 @@ export class Injector {
         this.resolveModuleFactoryProvider(provider);
       } else {
         throw DIError(
-          `Provider [${provider.token}] can not be resolved, module is not found`);
+          `Provider [${provider.token}] can not be resolved, module is not found`
+        );
       }
     }
   }

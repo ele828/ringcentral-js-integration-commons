@@ -20,9 +20,9 @@ export function camelize(key) {
 }
 /* eslint-enable*/
 
-export function assert(cond, msg) {
+export function assert(cond, msg, ...args) {
   if (!cond) {
-    if (msg) throw DIError(msg);
+    if (msg) throw DIError(msg, ...args);
     else throw DIError('Assertion Failed');
   }
 }
