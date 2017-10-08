@@ -493,9 +493,30 @@ describe('Dependency Injection Features', () => {
 
   it('should make sure module will not be affected by decorator', () => {
     @Module()
-    class TestModule {}
+    class TestModule {
+      test() { return true; }
+    }
 
     @Library()
-    class TestLibrary {}
+    class TestLibrary {
+      test() { return true; }
+    }
+
+    @ModuleFactory()
+    class TestModuleFactory {
+      test() { return true; }
+    }
+
+    const tm = new TestModule();
+    const tl = new TestLibrary();
+    const tmf = new TestModuleFactory();
+
+    expect(tm).to.be.instanceOf(TestModule);
+    expect(tl).to.be.instanceOf(TestLibrary);
+    expect(tmf).to.be.instanceOf(TestModuleFactory);
+
+    expect(tm.test()).to.be.true;
+    expect(tl.test()).to.be.true;
+    expect(tmf.test()).to.be.true;
   });
 });

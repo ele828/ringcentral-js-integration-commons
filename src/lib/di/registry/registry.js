@@ -59,7 +59,7 @@ export default class Registry {
     this.providerRegistry.set(klass, metadata);
   }
 
-   /**
+  /**
    * Process the inheritance relationship of ModuleFactory.
    * Support some inheritance options such as overwrite, merge, etc.
    * ModuleFactory can only inherit from ModuleFactory.
