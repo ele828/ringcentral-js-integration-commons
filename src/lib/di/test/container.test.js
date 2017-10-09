@@ -1,5 +1,8 @@
-import { expect } from 'chai';
+import chai, { expect } from 'chai';
+import dirtyChai from 'dirty-chai';
 import Container from '../container';
+
+chai.use(dirtyChai);
 
 describe('Container', () => {
   class A {}
@@ -8,7 +11,7 @@ describe('Container', () => {
     it('should search locally firstly', () => {
       const container = new Container();
       container.set('A', A);
-      expect(container.has('A')).to.be.true;
+      expect(container.has('A')).to.be.true();
     });
 
     it('should search from parent container', () => {
@@ -17,12 +20,12 @@ describe('Container', () => {
       container.set('A', A);
       parentContainer.set('B', B);
       container.setParent(parentContainer);
-      expect(container.has('B')).to.be.true;
+      expect(container.has('B')).to.be.true();
     });
 
     it('should return false when no record is found', () => {
       const container = new Container();
-      expect(container.has('A')).to.be.false;
+      expect(container.has('A')).to.be.false();
     });
   });
 

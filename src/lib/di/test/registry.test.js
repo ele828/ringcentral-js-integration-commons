@@ -1,6 +1,9 @@
-import { expect } from 'chai';
+import chai, { expect } from 'chai';
+import dirtyChai from 'dirty-chai';
 import sinon from 'sinon';
 import Registry from '../registry/registry';
+
+chai.use(dirtyChai);
 
 describe('Registry', () => {
   beforeEach(() => {
@@ -35,7 +38,7 @@ describe('Registry', () => {
     it('should support empty object without deps', () => {
       class Module {}
       Registry.registerModule(Module, {});
-      expect(Registry.moduleRegistry.get(Module)).to.be.null;
+      expect(Registry.moduleRegistry.get(Module)).to.be.null();
     });
 
     it('should throw when deps is not an Array', () => {
@@ -78,7 +81,7 @@ describe('Registry', () => {
       Registry.registerModuleFactory(A, null);
       const retval = Registry.resolveInheritedModuleFactory(A);
       expect(retval).to.be.an('array');
-      expect(retval).to.be.empty;
+      expect(retval).to.be.empty();
     });
 
     it('should return original provider when no parent is found', () => {
@@ -104,7 +107,7 @@ describe('Registry', () => {
       const stub = sinon.stub(Registry, 'mergeProviders').callsFake(() => null);
       Registry.resolveInheritedModuleFactory(A);
       Registry.resolveInheritedModuleFactory(A);
-      expect(Registry.mergeProviders.calledOnce).to.be.true;
+      expect(Registry.mergeProviders.calledOnce).to.be.true();
       stub.restore();
     });
 
@@ -435,7 +438,7 @@ describe('Registry', () => {
       const stub = sinon.stub(Registry, 'mergeDependencies').callsFake(() => null);
       Registry.resolveInheritedDependencies(A);
       Registry.resolveInheritedDependencies(A);
-      expect(stub.calledOnce).to.be.true;
+      expect(stub.calledOnce).to.be.true();
       stub.restore();
     });
 

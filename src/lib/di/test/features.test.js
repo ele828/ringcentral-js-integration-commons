@@ -1,4 +1,5 @@
-import { expect } from 'chai';
+import chai, { expect } from 'chai';
+import dirtyChai from 'dirty-chai';
 import RcModule from '../../RcModule';
 import {
   Injector,
@@ -6,6 +7,8 @@ import {
   Library,
   ModuleFactory
 } from '../';
+
+chai.use(dirtyChai);
 
 describe('Dependency Injection Features', () => {
   beforeEach(() => {
@@ -50,7 +53,7 @@ describe('Dependency Injection Features', () => {
     }
     const instance = Injector.bootstrap(Root);
     expect(instance.recentMessage).to.be.an.instanceof(RecentMessage);
-    expect(instance.recentMessage.enabled).to.be.true;
+    expect(instance.recentMessage.enabled).to.be.true();
     expect(instance.recentMessage.existingOptions)
       .to.equal(instance.recentMessage.recentMessageOptions);
   });
@@ -180,7 +183,7 @@ describe('Dependency Injection Features', () => {
     }
 
     const instance = Injector.bootstrap(RootModule);
-    expect(instance.fakeModule).to.be.undefined;
+    expect(instance.fakeModule).to.be.undefined();
     expect(instance.fakeModule1).to.be.instanceOf(FakeModule1);
   });
 
@@ -515,8 +518,8 @@ describe('Dependency Injection Features', () => {
     expect(tl).to.be.instanceOf(TestLibrary);
     expect(tmf).to.be.instanceOf(TestModuleFactory);
 
-    expect(tm.test()).to.be.true;
-    expect(tl.test()).to.be.true;
-    expect(tmf.test()).to.be.true;
+    expect(tm.test()).to.be.true();
+    expect(tl.test()).to.be.true();
+    expect(tmf.test()).to.be.true();
   });
 });
