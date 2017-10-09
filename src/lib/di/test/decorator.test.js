@@ -17,8 +17,8 @@ describe('Module and Library decorator', () => {
     class FakeModule {}
     @Library()
     class FakeLib {}
-    expect(Registry.moduleRegistry.getClass('FakeModule')).to.equal(FakeModule);
-    expect(Registry.moduleRegistry.getClass('FakeLib')).to.equal(FakeLib);
+    expect(Registry.moduleRegistry.has(FakeModule)).to.be.true;
+    expect(Registry.moduleRegistry.has(FakeLib)).to.be.true;
   });
 
   it('Module metadata should be regitered', () => {
@@ -27,8 +27,8 @@ describe('Module and Library decorator', () => {
     class FakeModule {}
     @Library(metadata)
     class FakeLib {}
-    expect(Registry.moduleRegistry.get('FakeModule')).to.equal(metadata);
-    expect(Registry.moduleRegistry.get('FakeLib')).to.equal(metadata);
+    expect(Registry.moduleRegistry.get(FakeModule)).to.equal(metadata);
+    expect(Registry.moduleRegistry.get(FakeLib)).to.equal(metadata);
   });
 
   it('Support empty module metadata', () => {
@@ -36,8 +36,8 @@ describe('Module and Library decorator', () => {
     class FakeModule {}
     @Library()
     class FakeLib {}
-    expect(Registry.moduleRegistry.get('FakeModule')).to.equal(null);
-    expect(Registry.moduleRegistry.get('FakeLib')).to.equal(null);
+    expect(Registry.moduleRegistry.get(FakeModule)).to.equal(null);
+    expect(Registry.moduleRegistry.get(FakeLib)).to.equal(null);
   });
 
   it('Throw an error when register invalid module', () => {
@@ -61,14 +61,14 @@ describe('ModuleFactory decorator', () => {
   it('metadata should be registered', () => {
     @ModuleFactory()
     class RootModule {}
-    expect(Registry.providerRegistry.get('RootModule')).to.equal(null);
+    expect(Registry.providerRegistry.get(RootModule)).to.equal(null);
   });
 
   it('should register metadata', () => {
     const metadata = { providers: [] };
     @ModuleFactory(metadata)
     class RootModule {}
-    expect(Registry.providerRegistry.get('RootModule')).to.equal(metadata);
+    expect(Registry.providerRegistry.get(RootModule)).to.equal(metadata);
   });
 
   it('should throw error when metadata is invalid', () => {
