@@ -16,19 +16,23 @@
 - [X] Injects reducer, proxyReducer, getState, getProxyState
 - [X] Make error messages more readble
 - [X] Support module lazy evaluation
-- [ ] Check value validation process in @Module and @ModuleFactory
-- [ ] Write Unit Test
-- [ ] Integrate with commons project
-      - [ ] Change defaultReducer and defaultProxyReducer to null
-      - [X] Add module dependency definitions
-      - [X] Add basic module factory
-      - [ ] Make sure all tests in commons still work
 - [X] Solve injector scope issue (by using diffrent Injector instance)
 - [X] Hierarchical module factory
     - [X] Implement basic hierarchical injection
     - [X] Avoid circular dependency
 - [X] Support internal module provider (private)
 - [X] Ensure overwriting order
-- [ ] Implement module initialization lifecycle
+- [X] Check value validation process in @Module and @ModuleFactory
+- [X] Implement loose naming strategy (use class reference as key instead of its name)
+- [X] Write Unit Test
+- [ ] Write markdown documents
+- [ ] Integrate with commons project
+      - [X] Add module dependency definitions
+      - [X] Add basic module factory
+      - [ ] Change defaultReducer and defaultProxyReducer to null
+      - [ ] Make sure all tests in commons still work
+      - [ ] Make sure all modules still work with decorators
+- [ ] Integrate with googlechrome
+-   - [ ] Needs to design Proxy Module Factory
 - [ ] Error handling - one failure of module injection in prod env should not affect other modules
-- [ ] Nice to have: Implement loose naming strategy (use class reference as key instead of its name)
+- [ ] [Maybe] Implement module initialization lifecycle

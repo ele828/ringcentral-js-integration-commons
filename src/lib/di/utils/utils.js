@@ -1,3 +1,5 @@
+import { DIError } from './error';
+
 export function getParentClass(klass) {
   return Object.getPrototypeOf(klass);
 }
@@ -17,3 +19,10 @@ export function camelize(key) {
   );
 }
 /* eslint-enable*/
+
+export function assert(cond, msg, ...args) {
+  if (!cond) {
+    if (msg) throw DIError(msg, ...args);
+    else throw DIError('Assertion Failed');
+  }
+}

@@ -1,18 +1,11 @@
 import { combineReducers } from 'redux';
-
 import RcModule from '../RcModule';
 import Container from './container';
 import Registry from './registry/registry';
-import { ValueProvider, ClassProvider, FactoryProvider } from './provider';
-import { camelize } from './utils/utils';
+import { ValueProvider, ClassProvider, ExistingProvider, FactoryProvider } from './provider';
+import { assert, camelize } from './utils/utils';
 import { DIError, CircularDependencyError } from './utils/error';
-import {
-  isObject,
-  isValueProvider,
-  isStaticClassProvider,
-  isExistingProvider,
-  isFactoryProvider,
-} from './utils/is_type';
+import { isObject, isValueProvider, isStaticClassProvider, isExistingProvider, isFactoryProvider } from './utils/is_type';
 
 const REDUCER_LITERAL = '_reducer';
 const PROXY_REDUCER_LITERAL = '_proxyReducer';
@@ -27,6 +20,7 @@ export class Injector {
   static pending = new Set();
 
   constructor() {
+    this.targetClass = null;
     this.parentInjector = null;
     this.moduleRegistry = Registry.moduleRegistry;
     this.providerRegistry = Registry.providerRegistry;
@@ -42,15 +36,33 @@ export class Injector {
    */
   resolveModuleProvider(provider, pending = Injector.pending) {
     const container = this.container;
-    if (!provider) {
-      throw DIError('Expected valid provider instance', provider);
+    assert(provider, 'Expected valid provider instance', provider);
+
+    // Provider has already been resolved
+    if (container.localHas(provider.token)) return;
+
+    // useExisting provider needs to resolve existing providers instead of itself
+    if (provider instanceof ExistingProvider) {
+      if (pending.has(provider)) {
+        throw CircularDependencyError(pending, provider.token);
+      }
+      if (this.universalProviders.has(provider.useExisting)) {
+        pending.add(provider);
+        this.resolveModuleProvider(this.universalProviders.get(provider.useExisting));
+        pending.delete(provider);
+      }
+      if (container.localHas(provider.useExisting)) {
+        container.set(provider.token, container.localGet(provider.useExisting));
+      } else {
+        throw DIError(`ExistingProvider [${provider.useExisting}] is not found`);
+      }
+      return;
     }
-    // If provider exists in ancestor injector,
+
+    // If provider exists in ancestor injectors,
     // then it should create a reference to that provider locally.
     if (container.has(provider.token)) {
-      if (!container.nativeHas(provider.token)) {
-        container.set(provider.token, container.get(provider.token));
-      }
+      container.set(provider.token, container.get(provider.token));
       return;
     }
     if (!this.universalProviders.has(provider.token)) {
@@ -59,6 +71,8 @@ export class Injector {
       }
     }
     if (provider instanceof ValueProvider) {
+      // TODO: this can be optimized to use properties to track the spread flag
+      // so that we don't need to create a new object for spread feature
       const value = provider.spread
         ? { value: provider.value, spread: provider.spread }
         : provider.value;
@@ -74,25 +88,25 @@ export class Injector {
       container.set(provider.token, provider);
       pending.delete(provider.token);
     } else if (provider instanceof ClassProvider) {
-      if (this.moduleRegistry.has(provider.klass.name)) {
-        Registry.processModuleLibraryInheritance(provider.klass.name);
-        const moduleMetadata = this.moduleRegistry.get(provider.klass.name);
-        const deps = moduleMetadata !== null ? moduleMetadata.deps : [];
+      if (this.moduleRegistry.has(provider.klass)) {
+        const deps = Registry.resolveInheritedDependencies(provider.klass) || [];
         const Klass = provider.klass;
-        if (!deps || deps.length === 0) {
-          provider.setInstance(new Klass());
-          container.set(provider.token, provider);
-          return;
-        }
         pending.add(provider.token);
         const dependencies = this.resolveDependencies(deps, pending);
         const instance = new Klass(dependencies);
         provider.setInstance(instance);
         container.set(provider.token, provider);
         pending.delete(provider.token);
-      } else if (this.providerRegistry.has(provider.token)) {
+      } else if (
+        provider instanceof ClassProvider &&
+        this.providerRegistry.has(provider.klass)
+      ) {
         // Depends on moduleFactory provider
         this.resolveModuleFactoryProvider(provider);
+      } else {
+        throw DIError(
+          `Provider [${provider.token}] can not be resolved, module is not found`
+        );
       }
     }
   }
@@ -161,6 +175,10 @@ export class Injector {
   resolveModuleFactoryProvider(providerInstance) {
     if (!this.container.has(providerInstance.token)) {
       Injector.pending.add(providerInstance.token);
+      // Prevent reference to itself
+      if (providerInstance.klass === this.targetClass) {
+        throw CircularDependencyError(Injector.pending, this.targetClass.name);
+      }
       const instance = Injector.bootstrap(providerInstance.klass, this);
       providerInstance.setInstance(instance);
       this.container.set(
@@ -187,17 +205,18 @@ export class Injector {
    * @param {Class} RootClass
    */
   _bootstrap(RootClass) {
-    if (this.container.nativeHas(RootClass.name)) {
-      return this.container.nativeGet(RootClass.name).getInstance();
+    this.targetClass = RootClass;
+    if (this.container.localHas(RootClass.name)) {
+      return this.container.localGet(RootClass.name).getInstance();
     }
 
     // Implement inheritance for ModuleFactory
-    const providerMetadata = Registry.processModuleFactoryInheritance(RootClass);
+    const providersMetadata = Registry.resolveInheritedModuleFactory(RootClass);
 
     // Iterate through all provider metadata
     // Discard providers in parent class overwritten by children
     const universalProviders = this.universalProviders;
-    for (const provider of providerMetadata) {
+    for (const provider of providersMetadata) {
       if (isValueProvider(provider)) {
         universalProviders.set(
           provider.provide,
@@ -211,8 +230,7 @@ export class Injector {
       } else if (isExistingProvider(provider)) {
         universalProviders.set(
           provider.provide,
-          // TODO: support useExisting to be an module token
-          new ClassProvider(provider.provide, provider.useExisting, null, provider.private)
+          new ExistingProvider(provider.provide, provider.useExisting, provider.private)
         );
       } else if (isFactoryProvider(provider)) {
         universalProviders.set(
@@ -225,16 +243,15 @@ export class Injector {
       }
     }
 
-    /**
-     * TODO: Perform metadata normalization
-     */
-
     // Resolve dependencies and create instances of provides
     const container = this.container;
     for (const provider of this.universalProviders.values()) {
       if (!container.has(provider.provide)) {
         // Provider is a module factory
-        if (this.providerRegistry.has(provider.token)) {
+        if (
+          provider instanceof ClassProvider &&
+          this.providerRegistry.has(provider.klass)
+        ) {
           this.resolveModuleFactoryProvider(provider);
         } else {
           this.resolveModuleProvider(provider);
@@ -284,10 +301,7 @@ export class Injector {
         Object.defineProperty(rootClassInstance, REDUCER_LITERAL, {
           value: combineReducers({
             ...reducers,
-            lastAction: (state = null, action) => {
-              // console.log(action);
-              return action;
-            }
+            lastAction: (state = null, action) => action
           })
         });
 
@@ -299,16 +313,12 @@ export class Injector {
       }
     }
 
-    // Regard root class as a provider
-    this.container.set(
-      RootClass.name,
-      new ClassProvider(RootClass.name, rootClassInstance, null, false)
-    );
     return rootClassInstance;
   }
 
   /**
    * Get specific provider by injector.
+   * Will search for providers from parentInjector.
    * @param {String} token
    */
   get(token) {
