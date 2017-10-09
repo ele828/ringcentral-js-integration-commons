@@ -1,13 +1,13 @@
-import { expect } from 'chai';
+import chai, { expect } from 'chai';
+import dirtyChai from 'dirty-chai';
 import sinon from 'sinon';
 import {
-  Injector,
-  Module,
-  Library,
-  ModuleFactory
+  Injector
 } from '../';
 import Registry from '../registry/registry';
 import { ClassProvider, ExistingProvider, ValueProvider, FactoryProvider } from '../provider';
+
+chai.use(dirtyChai);
 
 describe('Injector', () => {
   beforeEach(() => Injector.reset());
@@ -18,7 +18,7 @@ describe('Injector', () => {
         const injector = new Injector();
         injector.resolveModuleProvider();
       };
-      expect(invalidParamsFunction).to.throw;
+      expect(invalidParamsFunction).to.throw();
     });
 
     it('should not calculate provider if already exists', () => {
@@ -26,7 +26,6 @@ describe('Injector', () => {
       const provider = new ClassProvider('Token', {});
       injector.container.set('Token', provider);
       injector.resolveModuleProvider(provider);
-      const instance = injector.get('Token');
       expect(injector.container._map.size).to.equal(1);
     });
 
@@ -44,7 +43,6 @@ describe('Injector', () => {
           new ExistingProvider('Exist', 'Provider')
         );
         injector.resolveModuleProvider(injector.universalProviders.get('Exist'));
-        const instance = injector.get('Exist');
         expect(injector.container._map.size).to.equal(2);
         expect(injector.get('Exist')).to.be.an.instanceof(Provider);
       });
@@ -64,7 +62,7 @@ describe('Injector', () => {
           new ExistingProvider('Exist', 'Provider')
         );
         const func = () => injector.resolveModuleProvider(injector.universalProviders.get('Exist'));
-        expect(func).to.throw;
+        expect(func).to.throw();
       });
 
       it('should support ValueProvider', () => {
@@ -79,7 +77,6 @@ describe('Injector', () => {
           new ExistingProvider('Exist', 'ValueProvider')
         );
         injector.resolveModuleProvider(injector.universalProviders.get('Exist'));
-        const instance = injector.get('Exist');
         expect(injector.container._map.size).to.equal(2);
         expect(injector.get('Exist')).to.equal(val);
       });
@@ -96,7 +93,6 @@ describe('Injector', () => {
           new ExistingProvider('Exist', 'FactoryProvider')
         );
         injector.resolveModuleProvider(injector.universalProviders.get('Exist'));
-        const instance = injector.get('Exist');
         expect(injector.container._map.size).to.equal(2);
         expect(injector.get('Exist')).to.equal(func);
       });
@@ -114,8 +110,8 @@ describe('Injector', () => {
           new ClassProvider('Provider', Provider)
         );
         injector.resolveModuleProvider(parentInjector.universalProviders.get('Provider'));
-        expect(injector.container.localHas('Provider')).to.be.true;
-        expect(parentInjector.container.localHas('Provider')).to.be.true;
+        expect(injector.container.localHas('Provider')).to.be.true();
+        expect(parentInjector.container.localHas('Provider')).to.be.true();
         expect(
           parentInjector.container.localGet('Provider')
         ).to.equal(
@@ -256,7 +252,7 @@ describe('Injector', () => {
         const provider = new ClassProvider('TestModule', TestModule);
         sinon.stub(injector, 'resolveDependencies').callsFake(() => null);
         injector.resolveModuleProvider(provider);
-        expect(injector.resolveDependencies.calledOnce).to.be.true;
+        expect(injector.resolveDependencies.calledOnce).to.be.true();
       });
 
       it('should resolve dependent providers in ancestor moduleFactory', () => {
@@ -272,7 +268,7 @@ describe('Injector', () => {
         const provider = new ClassProvider('ModuleProvider', ModuleProvider);
         sinon.stub(injector, 'resolveModuleFactoryProvider').callsFake(() => null);
         injector.resolveModuleProvider(provider);
-        expect(injector.resolveModuleFactoryProvider.calledOnce).to.be.true;
+        expect(injector.resolveModuleFactoryProvider.calledOnce).to.be.true();
       });
 
       it('should throw when provider can not be resolved', () => {
@@ -307,7 +303,7 @@ describe('Injector', () => {
       try {
         injector.resolveDependencies([{ dep: 'Test', optional: false }], new Set());
       } catch (e) { /* Ignore */ }
-      expect(injector.resolveModuleProvider.called).to.be.true;
+      expect(injector.resolveModuleProvider.called).to.be.true();
     });
 
     it('should resolve dependent moduleFactory provider', () => {
@@ -318,7 +314,7 @@ describe('Injector', () => {
       try {
         injector.resolveDependencies([{ dep: 'Test', optional: false }], new Set());
       } catch (e) { /* Ingore */ }
-      expect(pInjector.resolveModuleProviderForChildren.called).to.be.true;
+      expect(pInjector.resolveModuleProviderForChildren.called).to.be.true();
     });
 
     it('should support optional dependency', () => {
@@ -378,7 +374,7 @@ describe('Injector', () => {
       sinon.stub(injector, 'resolveModuleProvider').callsFake(() => {});
       injector.universalProviders.set('Test', {});
       injector.resolveModuleProviderForChildren('Test');
-      expect(injector.resolveModuleProvider.called).to.be.true;
+      expect(injector.resolveModuleProvider.called).to.be.true();
     });
 
     it('should resolve module from parent injector', () => {
@@ -387,7 +383,7 @@ describe('Injector', () => {
       sinon.stub(pInjector, 'resolveModuleProviderForChildren').callsFake(() => {});
       injector.setParent(pInjector);
       injector.resolveModuleProviderForChildren('Test');
-      expect(pInjector.resolveModuleProviderForChildren.called).to.be.true;
+      expect(pInjector.resolveModuleProviderForChildren.called).to.be.true();
     });
   });
 
@@ -529,7 +525,7 @@ describe('Injector', () => {
           ]
         });
         injector._bootstrap(Test);
-        expect(injector.resolveModuleProvider.calledOnce).to.be.true;
+        expect(injector.resolveModuleProvider.calledOnce).to.be.true();
       });
 
       it('should try to resolve module factory provider', () => {
@@ -544,7 +540,7 @@ describe('Injector', () => {
           ]
         });
         injector._bootstrap(Test);
-        expect(injector.resolveModuleFactoryProvider.called).to.be.true;
+        expect(injector.resolveModuleFactoryProvider.called).to.be.true();
       });
     });
 
