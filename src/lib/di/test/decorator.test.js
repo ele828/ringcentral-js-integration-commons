@@ -1,4 +1,5 @@
-import { expect } from 'chai';
+import chai, { expect } from 'chai';
+import dirtyChai from 'dirty-chai';
 import {
   Injector,
   Module,
@@ -6,6 +7,8 @@ import {
   ModuleFactory
 } from '../';
 import Registry from '../registry/registry';
+
+chai.use(dirtyChai);
 
 describe('Module and Library decorator', () => {
   beforeEach(() => {
@@ -17,8 +20,8 @@ describe('Module and Library decorator', () => {
     class FakeModule {}
     @Library()
     class FakeLib {}
-    expect(Registry.moduleRegistry.has(FakeModule)).to.be.true;
-    expect(Registry.moduleRegistry.has(FakeLib)).to.be.true;
+    expect(Registry.moduleRegistry.has(FakeModule)).to.be.true();
+    expect(Registry.moduleRegistry.has(FakeLib)).to.be.true();
   });
 
   it('Module metadata should be regitered', () => {
@@ -41,6 +44,7 @@ describe('Module and Library decorator', () => {
   });
 
   it('Throw an error when register invalid module', () => {
+    /* eslint-disable */
     function module() {
       @Module([])
       class FakeModule {}
@@ -49,6 +53,7 @@ describe('Module and Library decorator', () => {
       @Library([])
       class FakeLib {}
     }
+    /* eslint-enable */
     expect(module).to.throw();
     expect(library).to.throw();
   });
@@ -72,20 +77,24 @@ describe('ModuleFactory decorator', () => {
   });
 
   it('should throw error when metadata is invalid', () => {
+    /* eslint-disable */
     function moduleFactory() {
       @ModuleFactory([])
       class RootModule {}
     }
+    /* eslint-enable */
     expect(moduleFactory).to.throw();
   });
 
   it('should throw error when providers is invalid', () => {
+    /* eslint-disable */
     function moduleFactory() {
       @ModuleFactory({
         providers: {}
       })
       class RootModule {}
     }
+    /* eslint-enable */
     expect(moduleFactory).to.throw();
   });
 });
