@@ -1,7 +1,6 @@
 import ModuleRegistry from './module_registry';
 import ProviderRegistry from './provider_registry';
 import { getParentClass, assert } from '../utils/utils';
-import { DIError } from '../utils/error';
 import { isEmpty, isFunction, isArray, isObject } from '../utils/is_type';
 
 export default class Registry {
@@ -146,14 +145,8 @@ export default class Registry {
       // useValue and don't overwrite parent values
       const pp = merged.get(p.provide);
       if (pp && p.useValue && p.merge) {
-        if (!pp.useValue) {
-          throw DIError(`Expected parent provider of [${p.provide}] to be a value provider`);
-        }
-        if (!isObject(pp.useValue)) {
-          throw DIError(
-            `Expected parent provider of [${p.provide}] to be an Object`
-          );
-        }
+        assert(pp.useValue, `Expected parent provider of [${p.provide}] to be a value provider`);
+        assert(isObject(pp.useValue), `Expected parent provider of [${p.provide}] to be an Object`);
         p.useValue = Object.assign({}, pp.useValue, p.useValue);
         merged.set(p.provide, Object.assign({}, pp, p));
       } else {

@@ -301,6 +301,7 @@ export class Injector {
         Object.defineProperty(rootClassInstance, REDUCER_LITERAL, {
           value: combineReducers({
             ...reducers,
+            // eslint-disable-next-line
             lastAction: (state = null, action) => action
           })
         });
@@ -343,5 +344,4 @@ export class Injector {
     Registry.moduleRegistry.reset();
     Registry.providerRegistry.reset();
   }
-
 }
