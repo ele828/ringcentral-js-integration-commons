@@ -36,7 +36,7 @@ export class Injector {
    */
   resolveModuleProvider(provider, pending = Injector.pending) {
     const container = this.container;
-    assert(provider, 'Expected valid provider instance', provider);
+    assert(provider, 'Expected valid provider', provider);
 
     // Provider has already been resolved
     if (container.localHas(provider.token)) return;
@@ -206,6 +206,7 @@ export class Injector {
    */
   _bootstrap(RootClass) {
     this.targetClass = RootClass;
+    // TODO: how to cache root class?
     if (this.container.localHas(RootClass.name)) {
       return this.container.localGet(RootClass.name).getInstance();
     }

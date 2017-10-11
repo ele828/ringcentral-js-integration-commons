@@ -178,8 +178,11 @@ export default class Registry {
       if (!isObject(base)) {
         base = { dep: base, optional: false };
       }
-      if (merged.has(base.dep) && base.optional !== merged.get(base.dep).optional) {
-        merged.set(base.dep, { dep: base.dep, optional: false });
+      if (merged.has(base.dep)) {
+        merged.set(base.dep, {
+          dep: base.dep,
+          optional: base.optional && merged.get(base.dep).optional
+        });
       } else {
         merged.set(base.dep, base);
       }

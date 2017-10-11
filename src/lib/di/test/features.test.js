@@ -101,6 +101,34 @@ describe('Dependency Injection Features', () => {
     expect(instance.recentMessage.messageStore).to.be.an.instanceof(MessageStore);
   });
 
+  it('should support useExisting values', () => {
+    @ModuleFactory({
+      providers: [
+        { provide: 'Options', useValue: { value: 'value' } }
+      ]
+    })
+    class ParentRootModule {}
+
+    @ModuleFactory({
+      providers: [
+        { provide: 'Options', useValue: { key: 'key' }, spread: true, merge: true },
+        { provide: 'ExistingOptions', useExisting: 'Options' }
+      ]
+    })
+    class TestRootModule extends ParentRootModule {
+      constructor({
+        options,
+        existingOptions
+      }) {
+        super();
+        this.options = options;
+        this.existingOptions = existingOptions;
+      }
+    }
+    const instance = Injector.bootstrap(TestRootModule);
+    expect(instance.existingOptions).deep.equal(instance.options);
+  });
+
   it('dependency name should be consistent with provider token', () => {
     @Module({
       deps: ['Module']
