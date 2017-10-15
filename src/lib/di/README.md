@@ -195,15 +195,14 @@ The inheritance mechanism will still work even if its parent class is without `@
 
 ### ModuleFactory Inheritance
 Similarly, a ModuleFactory can inherit from another ModuleFactory. This feature can be used for extending an overall module set.
-
 ```js
 @ModuleFactory({
   providers: [
     { provide: 'Webphone', useClass: Webphone },
     { provide: 'AccountInfo', useClass: AccountInfo },
     { provide: 'Config',
-	  useValue: {
-	    server: 'https://platform.ringcentral.com'
+      useValue: {
+        server: 'https://platform.ringcentral.com'
       },
       spread: true,
       private: true }
