@@ -175,7 +175,7 @@ export class Injector {
   resolveModuleFactoryProvider(providerInstance) {
     if (!this.container.has(providerInstance.token)) {
       Injector.pending.add(providerInstance.token);
-      // Prevent reference to itself
+      // Prevent referencing to itself
       if (providerInstance.klass === this.targetClass) {
         throw CircularDependencyError(Injector.pending, this.targetClass.name);
       }
