@@ -18,7 +18,7 @@ export function camelize(key) {
     (match, separator, chr) => match.toLowerCase()
   );
 }
-/* eslint-enable*/
+/* eslint-enable */
 
 export function assert(cond, msg, ...args) {
   if (!cond) {

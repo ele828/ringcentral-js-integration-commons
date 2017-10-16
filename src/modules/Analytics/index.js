@@ -18,7 +18,6 @@ import callingModes from '../CallingSettings/callingModes';
     'Webphone',
     'Contacts',
     'MessageSender',
-    'Router',
     { dep: 'Router', optional: true },
     { dep: 'AnalyticsAdapter', optional: true },
     { dep: 'AnalyticsOptions', optional: true }

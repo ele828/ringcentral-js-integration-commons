@@ -36,7 +36,7 @@ export class Injector {
    */
   resolveModuleProvider(provider, pending = Injector.pending) {
     const container = this.container;
-    assert(provider, 'Expected valid provider instance', provider);
+    assert(provider, 'Expected valid provider', provider);
 
     // Provider has already been resolved
     if (container.localHas(provider.token)) return;
@@ -175,7 +175,7 @@ export class Injector {
   resolveModuleFactoryProvider(providerInstance) {
     if (!this.container.has(providerInstance.token)) {
       Injector.pending.add(providerInstance.token);
-      // Prevent reference to itself
+      // Prevent referencing to itself
       if (providerInstance.klass === this.targetClass) {
         throw CircularDependencyError(Injector.pending, this.targetClass.name);
       }
@@ -206,6 +206,7 @@ export class Injector {
    */
   _bootstrap(RootClass) {
     this.targetClass = RootClass;
+    // TODO: how to cache root class?
     if (this.container.localHas(RootClass.name)) {
       return this.container.localGet(RootClass.name).getInstance();
     }
@@ -301,6 +302,7 @@ export class Injector {
         Object.defineProperty(rootClassInstance, REDUCER_LITERAL, {
           value: combineReducers({
             ...reducers,
+            // eslint-disable-next-line
             lastAction: (state = null, action) => action
           })
         });
@@ -343,5 +345,4 @@ export class Injector {
     Registry.moduleRegistry.reset();
     Registry.providerRegistry.reset();
   }
-
 }
