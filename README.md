@@ -133,7 +133,7 @@ npm run dev-server
 The development server is listening on port 8190 by default. Open up your browser and access `localhost:8190` to see how it works.
 
 ## Dependency Injection
-Refer to Dependency Injection docs
+Please refer to [Dependency Injection](docs/dependency-injection.md) for more details.
 
 ## Modules
 ---
