@@ -40,7 +40,7 @@ function getSyncParams(syncToken, pageId) {
     'Client',
     'Auth',
     'Storage',
-    { dep: 'AddessBookOptions', optional: true }
+    { dep: 'AddressBookOptions', optional: true }
   ]
 })
 export default class AddressBook extends Pollable {

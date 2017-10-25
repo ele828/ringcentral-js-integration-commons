@@ -113,7 +113,7 @@ export class Injector {
 
   /**
    * Resolve module dependencies recursively.
-   * If module is not optional and can not be resolved, then an DIError will be thrown
+   * If module is not optional and can not be resolved, then DIError will be thrown
    * @param {Array} deps - module dependencies
    * @param {Set} pending - process record
    */
@@ -169,7 +169,7 @@ export class Injector {
   }
 
   /**
-   * Used to resolve a ModuleFactory provider specifically.
+   * Used for resolving ModuleFactory provider specifically.
    * @param {Provider} providerInstance
    */
   resolveModuleFactoryProvider(providerInstance) {
