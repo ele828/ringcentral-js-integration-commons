@@ -76,6 +76,8 @@ export default class DateFetcher {
 ### @ModuleFactory
 `@ModuleFactory` is used for declaring a module factory. Module factory is usually a central place for registering and providing a bunch of modules and also assembling the registered module as a whole.
 
+> Note: the ValueProvider will be injected into ModuleFactory as a provider instead of being spread.
+
 ```js
 @ModuleFactory({
   // Register module as module provider
@@ -123,7 +125,7 @@ There are four kinds of `Provider`:
 ##### Class Provider
 Provide a class, it's usually used for providing a module class.
 ##### Value Provider
-Provide values, it's usually used for injecting configuration options. There is a `spread` property, which can be used for spreading the value object during injection process.
+Provide values, it's usually used for injecting configuration options. There is a `spread` property, which can be used for spreading the value object during injection process. **The spread action will only happen in the Module Injection process.**
 
 ```js
 @Module({
@@ -153,7 +155,7 @@ Provide anything that returned by the factory function, it's usually used for im
 @ModuleFactory({
   providers: [
     { provide: 'Factory',
-      useFactory: ({ client })=> new Klass(client),
+      useFactory: ({ client }) => new Klass(client),
       deps: ['Client'] }
   ]
 })
