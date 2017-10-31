@@ -70,12 +70,6 @@ export class Injector {
       }
     }
     if (provider instanceof ValueProvider) {
-      // TODO: this can be optimized to use properties to track the spread flag
-      // so that we don't need to create a new object for spread feature
-      const value = provider.spread
-        ? { value: provider.value, spread: provider.spread }
-        : provider.value;
-      provider.setInstance(value);
       container.set(provider.token, provider);
     } else if (provider instanceof FactoryProvider) {
       pending.add(provider.token);
@@ -137,13 +131,23 @@ export class Injector {
       // If the dependency is not optional and Provider is found, then try to inject the dependency.
       // Otherwise, if the Provider is not found, then an Error should be thrown.
       if (!optional || this.container.has(dep)) {
-        const dependentModule = this.container.get(dep).getInstance();
+        const dependentProvider = this.container.get(dep);
+        const dependentInstance = dependentProvider.getInstance();
 
         // Value dependency and use spread, in this case, value object needs to be spreaded
-        if (dependentModule.value !== undefined && dependentModule.spread) {
-          Object.assign(dependencies, dependentModule.value);
+        if (dependentProvider instanceof ValueProvider) {
+          if (dependentProvider.spread) {
+            Object.assign(dependencies, dependentInstance.value);
+          } else {
+            dependencies[camelize(dep)] = dependentInstance.value;
+          }
+        } else if (
+          dependentProvider instanceof FactoryProvider &&
+          dependentProvider.spread
+        ) {
+          Object.assign(dependencies, dependentInstance);
         } else {
-          dependencies[camelize(dep)] = dependentModule;
+          dependencies[camelize(dep)] = dependentProvider.getInstance();
         }
       } else if (!optional) {
         throw DIError(`Dependency Module [${dep}] can not be resolved`);
@@ -236,7 +240,7 @@ export class Injector {
         universalProviders.set(
           provider.provide,
           // eslint-disable-next-line
-          new FactoryProvider(provider.provide, provider.useFactory, provider.deps, provider.private)
+          new FactoryProvider(provider.provide, provider.useFactory, provider.deps, provider.spread, provider.private)
         );
       } else {
         throw DIError('Expected valid provider', provider);
@@ -324,7 +328,12 @@ export class Injector {
    * @param {String} token
    */
   get(token) {
-    return this.container.get(token).getInstance();
+    const provider = this.container.get(token);
+    const instance = provider.getInstance();
+    if (provider instanceof ValueProvider) {
+      return instance.value;
+    }
+    return instance;
   }
 
   /**
