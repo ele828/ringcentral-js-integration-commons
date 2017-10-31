@@ -1,5 +1,4 @@
 import { combineReducers } from 'redux';
-// import RcModule from '../RcModule';
 import Container from './container';
 import Registry from './registry/registry';
 import { ValueProvider, ClassProvider, ExistingProvider, FactoryProvider } from './provider';

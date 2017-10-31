@@ -33,7 +33,7 @@ function defaultGetProxyState() {
  * @description Base module class.
  */
 @Library({
-  deps: [{ dep: 'moduleOptions', optional: true }]
+  deps: [{ dep: 'ModuleOptions', optional: true }]
 })
 export default class RcModule {
   /**
