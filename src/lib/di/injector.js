@@ -1,5 +1,5 @@
 import { combineReducers } from 'redux';
-import RcModule from '../RcModule';
+// import RcModule from '../RcModule';
 import Container from './container';
 import Registry from './registry/registry';
 import { ValueProvider, ClassProvider, ExistingProvider, FactoryProvider } from './provider';
@@ -263,7 +263,12 @@ export class Injector {
     const moduleProviders = {};
     for (const [token, moduleProvider] of container.entries()) {
       if (!moduleProvider.private) {
-        moduleProviders[camelize(token)] = moduleProvider.getInstance();
+        const instance = moduleProvider.getInstance();
+        if (moduleProvider instanceof ValueProvider) {
+          moduleProviders[camelize(token)] = instance.value;
+        } else {
+          moduleProviders[camelize(token)] = instance;
+        }
       }
     }
 
@@ -275,7 +280,7 @@ export class Injector {
     // Register all module providers to root instance
     for (const name of Object.keys(moduleProviders)) {
       const module = moduleProviders[name];
-      if (rootClassInstance instanceof RcModule) {
+      if (rootClassInstance.addModule) {
         rootClassInstance.addModule(name, module);
       }
       if (module.reducer) {
@@ -287,18 +292,10 @@ export class Injector {
       }
 
       // Additional module configurations
-      // Do things like reducer registration, getState injection
-      if (module instanceof RcModule) {
-        if (module._reducer) {
-          Object.defineProperty(module, STATE_FUNC_LITERAL, {
-            value: () => rootClassInstance.state[name]
-          });
-        }
-        if (module._proxyReducer) {
-          Object.defineProperty(module, PROXY_STATE_FUNC_LITERAL, {
-            value: () => rootClassInstance.state[name]
-          });
-        }
+      if (module._reducer) {
+        Object.defineProperty(module, STATE_FUNC_LITERAL, {
+          value: () => rootClassInstance.state[name]
+        });
         Object.defineProperty(rootClassInstance, REDUCER_LITERAL, {
           value: combineReducers({
             ...reducers,
@@ -306,7 +303,11 @@ export class Injector {
             lastAction: (state = null, action) => action
           })
         });
-
+      }
+      if (module._proxyReducer) {
+        Object.defineProperty(module, PROXY_STATE_FUNC_LITERAL, {
+          value: () => rootClassInstance.state[name]
+        });
         Object.defineProperty(rootClassInstance, PROXY_REDUCER_LITERAL, {
           value: combineReducers({
             ...proxyReducers,

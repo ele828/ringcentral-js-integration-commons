@@ -1,5 +1,5 @@
 import { createSelector } from 'reselect';
-import { Injector } from '../di';
+import { Injector, Library } from '../di';
 import { prefixEnum } from '../Enum';
 import moduleStatuses from '../../enums/moduleStatuses';
 import proxyStatuses from '../../enums/proxyStatuses';
@@ -32,6 +32,9 @@ function defaultGetProxyState() {
  * @default
  * @description Base module class.
  */
+@Library({
+  deps: [{ dep: 'moduleOptions', optional: true }]
+})
 export default class RcModule {
   /**
    * @constructor

@@ -110,6 +110,9 @@ import Analytics from '../Analytics';
     RecentMessages,
     RecentCalls,
     Analytics,
+    { provide: 'ModuleOptions',
+      useValue: { prefix: 'rc-phone' },
+      spread: true },
     { provide: 'Client',
       useFactory: ({ clientOptions, config }) =>
         new RingCentralClient(new SDK({
@@ -142,8 +145,8 @@ import Analytics from '../Analytics';
   ]
 })
 export default class RcPhone extends RcModule {
-  constructor(modules) {
-    super(modules);
+  constructor({ moduleOptions, ...modules }) {
+    super({ prefix: moduleOptions.prefix, ...modules });
     const {
       router,
       webphone,
