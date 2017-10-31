@@ -32,7 +32,7 @@ export function callIdentityFunction(call) {
     'CallMonitor',
     'ContactMatcher',
     'TabManager',
-    { dep: 'CallLoggerOptions', optional: false }
+    { dep: 'CallLoggerOptions', optional: true }
   ]
 })
 export default class CallLogger extends LoggerBase {
@@ -189,7 +189,7 @@ export default class CallLogger extends LoggerBase {
         let toEntity = null;
         if (toMatches && toMatches.length === 1) {
           toEntity = toMatches[0];
-        } else if(toMatches && toMatches.length > 1 && toNumberEntity !== '') {
+        } else if (toMatches && toMatches.length > 1 && toNumberEntity !== '') {
           toEntity = toMatches.find(match =>
             toNumberEntity === match.id
           );

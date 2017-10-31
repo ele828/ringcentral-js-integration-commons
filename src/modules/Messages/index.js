@@ -17,8 +17,8 @@ import proxify from '../../lib/proxy/proxify';
     'MessageStore',
     'ExtensionInfo',
     'ContactMatcher',
-    'ConversationLogger',
     'ConversationMatcher',
+    { dep: 'ConversationLogger', optional: true },
     { dep: 'MessagesOptions', optional: true }
   ]
 })
