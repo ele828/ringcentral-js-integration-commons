@@ -151,6 +151,8 @@ class Phone {}
 ##### Factory Provider
 Provide anything that returned by the factory function, it's usually used for importing third party instances. The factory function also supports dependency injection which should be declared in `deps` property.
 
+The `spread` flag is also supported in Factory Provider when the factory function returns an object.
+
 ```js
 @ModuleFactory({
   providers: [
