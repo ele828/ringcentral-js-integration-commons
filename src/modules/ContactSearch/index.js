@@ -30,6 +30,7 @@ export function uniqueContactItems(result) {
   return unique;
 }
 
+const NON_ALPHABET_RE = /[^A-z]/;
 export function sortContactItemsByName(result) {
   const items = result || [];
   items.sort((a, b) => {
@@ -37,24 +38,38 @@ export function sortContactItemsByName(result) {
     const name2 = (b.name || '').toLowerCase().replace(/^\s\s*/, ''); // trim start
     const isNumber1 = /^[0-9]/.test(name1);
     const isNumber2 = /^[0-9]/.test(name2);
+    // Empty string should be put at the end
+    if (name1.length <= 0 || name2.length <= 0) {
+      return -name1.localeCompare(name2);
+    }
     if (isNumber1 && isNumber2) {
       return name1.localeCompare(name2);
-    } else if (isNumber1 || isNumber2) {
+    }
+    if (isNumber1 || isNumber2) {
       // put number name at last
       return -name1.localeCompare(name2);
+    }
+    if (NON_ALPHABET_RE.test(name1[0])) {
+      return 1;
     }
     return name1.localeCompare(name2);
   });
   return items;
 }
 
+const POUND_SIGN = '#';
 export function groupByFirstLetterOfName(contactItems) {
   const groups = [];
   if (contactItems && contactItems.length) {
     let group;
     contactItems.forEach((contact) => {
       const name = (contact.name || '').replace(/^\s\s*/, ''); // trim start
-      const letter = (name[0] || '').toLocaleUpperCase();
+      let letter = null;
+      if (name.length <= 0 || NON_ALPHABET_RE.test(name[0])) {
+        letter = POUND_SIGN;
+      } else {
+        letter = (name[0] || '').toLocaleUpperCase();
+      }
       if (!group || group.caption !== letter) {
         group = {
           contacts: [],
@@ -250,11 +265,11 @@ export default class ContactSearch extends RcModule {
       return;
     }
     this._clearTimeout();
-    this._timeoutId = setTimeout(async ()=>{
-      const searching = {...this.state.searching};
-      await this.search({searchString:undefined});
+    this._timeoutId = setTimeout(async () => {
+      const searching = { ...this.state.searching };
+      await this.search({ searchString: undefined });
       await this.search(searching);
-    },this._ttl);
+    }, this._ttl);
     const searchOnSources = Array.from(this._searchSources.keys());
     for (const sourceName of searchOnSources) {
       await this._searchSource({
@@ -280,11 +295,11 @@ export default class ContactSearch extends RcModule {
       return;
     }
     this._clearTimeout();
-    this._timeoutId = setTimeout(async ()=>{
-      const searchCriteria = {...this.state.searchCriteria};
-      await this.searchPlus({...this.state.searchCriteria,searchString:undefined});
+    this._timeoutId = setTimeout(async () => {
+      const searchCriteria = { ...this.state.searchCriteria };
+      await this.searchPlus({ ...this.state.searchCriteria, searchString: undefined });
       await this.searchPlus(searchCriteria);
-    },this._ttl);
+    }, this._ttl);
     this.store.dispatch({
       type: this.actionTypes.updateSearchCriteria,
       sourceName,
