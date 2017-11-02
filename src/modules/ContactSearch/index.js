@@ -49,8 +49,11 @@ export function sortContactItemsByName(result) {
       // put number name at last
       return -name1.localeCompare(name2);
     }
-    if (NON_ALPHABET_RE.test(name1[0])) {
+    if (NON_ALPHABET_RE.test(name1[0]) && !NON_ALPHABET_RE.test(name2[0])) {
       return 1;
+    }
+    if (!NON_ALPHABET_RE.test(name1[0]) && NON_ALPHABET_RE.test(name2[0])) {
+      return -1;
     }
     return name1.localeCompare(name2);
   });
