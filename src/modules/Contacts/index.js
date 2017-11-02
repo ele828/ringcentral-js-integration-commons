@@ -153,6 +153,7 @@ export default class Contacts extends RcModule {
         return contacts;
       }
     );
+    this._handlerContactsSources();
   }
 
   _handlerContactsSources() {
@@ -175,7 +176,6 @@ export default class Contacts extends RcModule {
       this.store.dispatch({
         type: this.actionTypes.initSuccess,
       });
-      this._handlerContactsSources();
     } else if (this._shouldReset()) {
       this._resetModuleStatus();
     }
