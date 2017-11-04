@@ -30,7 +30,7 @@ export function uniqueContactItems(result) {
   return unique;
 }
 
-const NON_ALPHABET_RE = /[^A-z]/;
+const NON_ALPHABET_RE = /[^a-z]/i;
 export function sortContactItemsByName(result) {
   const items = result || [];
   items.sort((a, b) => {
