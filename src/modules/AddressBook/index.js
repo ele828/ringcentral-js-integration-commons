@@ -120,10 +120,13 @@ export default class AddressBook extends Pollable {
           const contact = {
             type: this.sourceName,
             phoneNumbers: [],
+            emails: [],
             ...rawContact,
           };
           contact.id = `${contact.id}`;
           contact.name = `${contact.firstName || ''} ${contact.lastName || ''}`;
+          if (contact.email) contact.emails.push(contact.email);
+          if (contact.email2) contact.emails.push(contact.email2);
           Object.keys(contact).forEach((key) => {
             if (key.toLowerCase().indexOf('phone') === -1) {
               return;

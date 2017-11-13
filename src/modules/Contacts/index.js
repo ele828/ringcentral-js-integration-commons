@@ -287,6 +287,7 @@ export default class Contacts extends RcModule {
     const source = this._contactSources.get(contact && contact.type);
     if (source && source.getProfileImage) {
       const result = await source.getProfileImage(contact, useCache);
+      console.log('avatar result', result);
       return result;
     }
     return null;

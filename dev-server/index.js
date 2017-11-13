@@ -20,7 +20,7 @@ const store = createStore(phone.reducer);
 phone.setStore(store);
 
 store.subscribe(() => {
-  console.log(store.getState());
+  console.log(store.getState().lastAction);
 });
 
 const DemoView = connect(state => ({

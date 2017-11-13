@@ -26,6 +26,7 @@ import Conference from '../Conference';
 import ConnectivityMonitor from '../ConnectivityMonitor';
 import ContactMatcher from '../ContactMatcher';
 import Contacts from '../Contacts';
+import ContactDetails from '../ContactDetails';
 import ContactSearch from '../ContactSearch';
 import Conversation from '../Conversation';
 import ConversationLogger from '../ConversationLogger';
@@ -109,6 +110,7 @@ import AudioSettings from '../AudioSettings';
     AddressBook,
     AccountContacts,
     Contacts,
+    ContactDetails,
     ConversationLogger,
     Messages,
     RecentMessages,

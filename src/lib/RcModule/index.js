@@ -232,8 +232,11 @@ export default class RcModule {
     return Injector.bootstrap(this);
   }
 
+  /**
+   * Represents for module status, should be implemented by child class.
+   */
   get status() {
-    return moduleStatuses.ready;
+    throw new Error('status should be implemented.');
   }
 
   get ready() {
