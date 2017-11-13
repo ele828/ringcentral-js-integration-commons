@@ -7,6 +7,8 @@ export function getContactSearchConditions(types) {
       case types.updateCondition:
         if (condition) return condition;
         return state;
+      case types.resetCondition:
+        return null;
       default:
         return state;
     }

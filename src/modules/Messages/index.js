@@ -18,7 +18,8 @@ import proxify from '../../lib/proxy/proxify';
     'ExtensionInfo',
     'ContactMatcher',
     'ConversationMatcher',
-    'ConversationMatcher?',
+    { dep: 'ConversationLogger', optional: true },
+    { dep: 'MessagesOptions', optional: true }
   ]
 })
 export default class Messages extends RcModule {

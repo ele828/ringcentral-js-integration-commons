@@ -2,6 +2,7 @@ import RcModule from '../../lib/RcModule';
 import { Module } from '../../lib/di';
 import actionTypes from './actionTypes';
 import getContactDetailsReducer from './getContactDetailsReducer';
+import proxify from '../../lib/proxy/proxify';
 
 @Module({
   deps: [
@@ -18,11 +19,10 @@ export default class ContactDetails extends RcModule {
 
     this.addSelector(
       'currentContact',
-      () => this._contacts,
       () => this.condition,
       () => this._contacts.allContacts,
-      (contactsModule, condition) => {
-        if (condition) { return contactsModule.find(condition); }
+      (condition) => {
+        if (condition) { return this._contacts.find(condition); }
         return null;
       }
     );
@@ -62,6 +62,7 @@ export default class ContactDetails extends RcModule {
    * Find contact from all contacts by given conditions.
    * Stores search conditions to reducers.
    */
+  @proxify
   find({ id, type }) {
     this.store.dispatch({
       type: this.actionTypes.updateCondition,
@@ -69,6 +70,13 @@ export default class ContactDetails extends RcModule {
         id,
         type
       }
+    });
+  }
+
+  @proxify
+  clear() {
+    this.store.dispatch({
+      type: this.actionTypes.resetCondition
     });
   }
 
