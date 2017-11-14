@@ -80,6 +80,14 @@ export default class ContactDetails extends RcModule {
     });
   }
 
+  getProfileImage(contact) {
+    return this._contacts.getProfileImage(contact);
+  }
+
+  getPresence(contact) {
+    return this._contacts.getPresence(contact);
+  }
+
   get contact() {
     return this._selectors.currentContact();
   }
