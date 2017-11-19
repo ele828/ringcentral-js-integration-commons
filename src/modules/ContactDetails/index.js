@@ -3,6 +3,7 @@ import { Module } from '../../lib/di';
 import actionTypes from './actionTypes';
 import getContactDetailsReducer from './getContactDetailsReducer';
 import proxify from '../../lib/proxy/proxify';
+import background from '../../lib/background';
 
 @Module({
   deps: [
@@ -62,7 +63,7 @@ export default class ContactDetails extends RcModule {
    * Find contact from all contacts by given conditions.
    * Stores search conditions to reducers.
    */
-  @proxify
+  @background
   find({ id, type }) {
     this.store.dispatch({
       type: this.actionTypes.updateCondition,
@@ -73,17 +74,19 @@ export default class ContactDetails extends RcModule {
     });
   }
 
-  @proxify
+  @background
   clear() {
     this.store.dispatch({
       type: this.actionTypes.resetCondition
     });
   }
 
+  @background
   getProfileImage(contact) {
-    return this._contacts.getProfileImage(contact);
+    return this._contacts.getProfileImage(contact, true);
   }
 
+  @background
   getPresence(contact) {
     return this._contacts.getPresence(contact);
   }

@@ -102,6 +102,7 @@
     "ramda": "^0.24.1",
     "redux": "^3.5.2",
     "reselect": "2.5.4",
+    "reuse-promise": "^1.1.0",
     "ringcentral-web-phone": "^0.4.5",
     "url-loader": "^0.5.8",
     "uuid": "^3.0.1",

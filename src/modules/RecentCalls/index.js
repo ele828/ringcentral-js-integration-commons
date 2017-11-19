@@ -1,4 +1,4 @@
-import proxify from '../../lib/proxy/proxify';
+import background from '../../lib/background';
 import RcModule from '../../lib/RcModule';
 import { Module } from '../../lib/di';
 import actionTypes from './actionTypes';
@@ -66,7 +66,7 @@ export default class RecentCalls extends RcModule {
     return this.state.callStatus === callStatus.loaded;
   }
 
-  @proxify
+  @background
   async getCalls({ currentContact, sessionId = null }) {
     // No need to calculate recent calls of the same contact repeatly
     if (!currentContact) {
