@@ -83,7 +83,7 @@ export default class ContactDetails extends RcModule {
 
   @background
   getProfileImage(contact) {
-    return this._contacts.getProfileImage(contact, true);
+    return this._contacts.getProfileImage(contact);
   }
 
   @background
