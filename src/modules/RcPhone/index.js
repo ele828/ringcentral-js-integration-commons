@@ -59,6 +59,9 @@ import RecentMessages from '../RecentMessages';
 import RecentCalls from '../RecentCalls';
 import Analytics from '../Analytics';
 import AudioSettings from '../AudioSettings';
+import Meeting from '../Meeting';
+// Remove below
+import GoogleCalendar from '../GoogleCalendar';
 
 @ModuleFactory({
   providers: [
@@ -116,6 +119,9 @@ import AudioSettings from '../AudioSettings';
     RecentMessages,
     RecentCalls,
     Analytics,
+    Meeting,
+    // Remove below
+    GoogleCalendar,
     { provide: 'ModuleOptions',
       useValue: { prefix: 'rc-phone' },
       spread: true },
