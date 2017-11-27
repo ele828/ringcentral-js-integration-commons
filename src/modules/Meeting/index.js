@@ -15,7 +15,7 @@ export const MeetingType = {
   INSTANT: 'Instant',
 };
 
-// Basic default meeting type infomation
+// Basic default meeting type information
 export const getDefaultMeetingSettings = extensionName => ({
   topic: `${extensionName}'s Meeting`,
   meetingType: MeetingType.SCHEDULED,
@@ -165,9 +165,9 @@ export default class Meeting extends RcModule {
       this.store.dispatch({
         type: this.actionTypes.initScheduling
       });
-      meeting = this._format(meeting);
       // Validate meeting
       this._validate(meeting);
+      meeting = this._format(meeting);
 
       const resp = await this._client
         .account()
@@ -218,10 +218,8 @@ export default class Meeting extends RcModule {
       startHostVideo,
       startParticipantsVideo,
       audioOptions,
-      // formatted
       password,
       schedule,
-      _requireMeetingPassword,
     } = meeting;
     const formatted = {
       topic,
@@ -230,7 +228,6 @@ export default class Meeting extends RcModule {
       startHostVideo,
       startParticipantsVideo,
       audioOptions,
-      _requireMeetingPassword,
     };
     if (password) {
       formatted.password = password;
@@ -270,7 +267,7 @@ export default class Meeting extends RcModule {
     if (topic.length <= 0) {
       errors.push(meetingStatus.emptyTopic);
     }
-    if (meeting._requireMeetingPassword && (!password || password.length <= 0)) {
+    if (_requireMeetingPassword && (!password || password.length <= 0)) {
       errors.push(meetingStatus.noPassword);
     }
     if (schedule) {
