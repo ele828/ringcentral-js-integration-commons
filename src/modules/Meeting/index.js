@@ -138,6 +138,15 @@ export default class Meeting extends RcModule {
    */
   @background
   init() {
+    this._initMeeting();
+  }
+
+  @proxify
+  reload() {
+    this._initMeeting();
+  }
+
+  _initMeeting() {
     const extensionName = this._extensionInfo.info.name || '';
     this.store.dispatch({
       type: this.actionTypes.updateMeeting,
@@ -184,10 +193,14 @@ export default class Meeting extends RcModule {
         type: this.actionTypes.scheduled,
         meeting
       });
+      // Reload meeting info
+      this._initMeeting();
       // Nofity user the meeting has been scheduled
-      this._alert.info({
-        message: meetingStatus.scheduledSuccess
-      });
+      setTimeout(() => {
+        this._alert.info({
+          message: meetingStatus.scheduledSuccess
+        });
+      }, 50);
       return {
         meeting: resp,
         serviceInfo,
