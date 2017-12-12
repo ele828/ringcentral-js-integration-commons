@@ -82,6 +82,7 @@ export default class Auth extends RcModule {
     this._defaultProxyRetry = defaultProxyRetry;
     this._reducer = getAuthReducer(this.actionTypes);
     this._beforeLogoutHandlers = new Set();
+    this._afterLoggedInHandlers = new Set();
     this._proxyFrame = null;
     this._proxyFrameLoaded = false;
     this._unbindEvents = null;
@@ -101,11 +102,15 @@ export default class Auth extends RcModule {
       }
     };
 
-    const onLoginSuccess = () => {
+    const onLoginSuccess = async () => {
       this.store.dispatch({
         type: this.actionTypes.loginSuccess,
         token: platform.auth().data(),
       });
+      const handlers = [...this._afterLoggedInHandlers];
+      for (const handler of handlers) {
+        await (async () => handler())();
+      }
     };
     const onLoginError = (error) => {
       this.store.dispatch({
@@ -372,6 +377,13 @@ export default class Auth extends RcModule {
   */
   removeBeforeLogoutHandler(handler) {
     this._beforeLogoutHandlers.remove(handler);
+  }
+
+  addAfterLoggedInHandler(handler) {
+    this._afterLoggedInHandlers.add(handler);
+    return () => {
+      this._afterLoggedInHandlers.remove(handler);
+    };
   }
 
   @proxify
