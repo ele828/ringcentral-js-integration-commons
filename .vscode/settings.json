@@ -14,5 +14,6 @@
     "release/**": true,
     "demo-extension-build": true,
     "coverage": true
-  }
+  },
+  "files.eol": "\n"
 }
