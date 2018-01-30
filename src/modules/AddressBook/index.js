@@ -183,6 +183,7 @@ export default class AddressBook extends Pollable {
     return (
       (!this._storage || this._storage.ready) &&
       (!this._tabManager || this._tabManager.ready) &&
+      this._rolesAndPermissions.ready &&
       this._auth.loggedIn &&
       this.pending
     );
@@ -193,6 +194,7 @@ export default class AddressBook extends Pollable {
       (
         (!!this._storage && !this._storage.ready) ||
         (!!this._tabManager && !this._tabManager.ready) ||
+        !this._rolesAndPermissions.ready ||
         !this._auth.loggedIn
       ) &&
       this.ready
