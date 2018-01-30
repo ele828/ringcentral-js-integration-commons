@@ -163,7 +163,13 @@ export default class AddressBook extends Pollable {
       if (this._shouleCleanCache()) {
         this._cleanUp();
       }
-      await this._initAddressBook();
+      if (this._hasPermission) {
+        await this._initAddressBook();
+      } else {
+        this.store.dispatch({
+          type: this.actionTypes.initSuccess,
+        });
+      }
     } else if (this._isDataReady()) {
       this.store.dispatch({
         type: this.actionTypes.initSuccess,
