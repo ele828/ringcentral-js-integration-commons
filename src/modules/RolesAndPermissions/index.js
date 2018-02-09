@@ -197,4 +197,8 @@ export default class RolesAndPermissions extends DataFetcher {
       )
     );
   }
+
+  get hasUserGuidePermission() {
+    return !!(this.callingEnabled || this.hasReadMessagesPermission);
+  }
 }
