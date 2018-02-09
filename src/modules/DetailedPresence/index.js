@@ -10,7 +10,7 @@ import {
   removeInboundRingOutLegs,
 } from '../../lib/callLogHelpers';
 
-const presenceRegExp = /\/presence(\?.*)?/;
+const presenceRegExp = /^detailedPresenceWithSip$/;
 
 /**
  * @class
