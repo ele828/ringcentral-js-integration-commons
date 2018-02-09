@@ -1,7 +1,7 @@
 require('es6-promise').polyfill();
 require('./pubnub');
 const RingCentral = require('ringcentral');
-const fetchMock = require('fetch-mock/es5/client');
+const fetchMock = require('fetch-mock');
 
 const dialingPlanBody = require('./data/dialingPlan');
 const extensionBody = require('./data/extensionInfo');
@@ -14,6 +14,9 @@ const authzProfileBody = require('./data/authzProfile');
 const blockedNumberBody = require('./data/blockedNumber');
 const forwardingNumberBody = require('./data/forwardingNumber');
 const phoneNumberBody = require('./data/phoneNumber');
+const presenceBody = require('./data/presence.json');
+const numberParserBody = require('./data/numberParser.json');
+const smsBody = require('./data/sms.json');
 
 const mockServer = 'http://whatever';
 export function createSDK(options = {}) {
@@ -123,7 +126,7 @@ export function tokenRefresh(failure) {
 
 export function presence(id) {
   mockApi({
-    path: `/restapi/v1.0/account/~/extension/${id}/presence`,
+    url: `begin:${mockServer}/restapi/v1.0/account/~/extension/${id}/presence`,
     body: {
       uri: `https://platform.ringcentral.com/restapi/v1.0/account/123/extension/${id}/presence`,
       extension: {
@@ -141,82 +144,160 @@ export function presence(id) {
   });
 }
 
-export function dialingPlan() {
+export function presenceUpdate(id, mockResponse = {}) {
+  mockApi({
+    path: `/restapi/v1.0/account/~/extension/${id}/presence`,
+    method: 'PUT',
+    body: {
+      ...presenceBody,
+      ...mockResponse,
+    }
+  });
+}
+
+export function dialingPlan(mockResponse = {}) {
   mockApi({
     path: '/restapi/v1.0/account/~/dialing-plan?perPage=MAX&page=1',
-    body: dialingPlanBody,
+    body: {
+      ...dialingPlanBody,
+      ...mockResponse,
+    }
   });
 }
 
-export function extensionInfo() {
+export function extensionInfo(mockResponse = {}) {
   mockApi({
     path: '/restapi/v1.0/account/~/extension/~',
-    body: extensionBody,
+    body: {
+      ...extensionBody,
+      ...mockResponse,
+    }
   });
 }
 
-export function extensionList() {
+export function extensionList(mockResponse = {}) {
   mockApi({
     url: `begin:${mockServer}/restapi/v1.0/account/~/extension?`,
-    body: extensionListBody,
+    body: {
+      ...extensionListBody,
+      ...mockResponse,
+    }
   });
 }
 
-export function accountInfo() {
+export function accountInfo(mockResponse = {}) {
   mockApi({
     path: '/restapi/v1.0/account/~',
-    body: accountBody,
+    body: {
+      ...accountBody,
+      ...mockResponse,
+    }
   });
 }
 
-export function apiInfo() {
+export function apiInfo(mockResponse = {}) {
   mockApi({
     path: '/restapi/v1.0',
-    body: apiInfoBody,
+    body: {
+      ...apiInfoBody,
+      ...mockResponse,
+    }
   });
 }
 
-export function messageSync() {
+export function messageSync(mockResponse = {}) {
   mockApi({
     url: `begin:${mockServer}/restapi/v1.0/account/~/extension/~/message-sync`,
-    body: messageSyncBody,
+    body: {
+      ...messageSyncBody,
+      ...mockResponse,
+    }
   });
 }
 
-export function authzProfile() {
+export function authzProfile(mockResponse = {}) {
   mockApi({
     path: '/restapi/v1.0/account/~/extension/~/authz-profile',
-    body: authzProfileBody,
+    body: {
+      ...authzProfileBody,
+      ...mockResponse,
+    }
   });
 }
 
-export function blockedNumber() {
+export function blockedNumber(mockResponse = {}) {
   mockApi({
     path: '/restapi/v1.0/account/~/extension/~/blocked-number',
-    body: blockedNumberBody,
+    body: {
+      ...blockedNumberBody,
+      ...mockResponse,
+    }
   });
 }
 
-export function forwardingNumber() {
+export function forwardingNumber(mockResponse = {}) {
   mockApi({
     url: `begin:${mockServer}/restapi/v1.0/account/~/extension/~/forwarding-number`,
-    body: forwardingNumberBody,
+    body: {
+      ...forwardingNumberBody,
+      ...mockResponse
+    }
   });
 }
 
-export function phoneNumber() {
+export function phoneNumber(mockResponse = {}) {
   mockApi({
     url: `begin:${mockServer}/restapi/v1.0/account/~/extension/~/phone-number`,
-    body: phoneNumberBody,
+    body: {
+      ...phoneNumberBody,
+      ...mockResponse,
+    }
   });
 }
 
-export function subscription() {
+export function subscription(mockResponse = {}) {
   mockApi({
     method: 'POST',
-    path: '/restapi/v1.0/subscription',
-    body: subscriptionBody,
+    url: `begin:${mockServer}/restapi/v1.0/subscription`,
+    body: {
+      ...subscriptionBody,
+      ...mockResponse,
+    }
   });
+  mockApi({
+    method: 'PUT',
+    url: `begin:${mockServer}/restapi/v1.0/subscription`,
+    body: {
+      ...subscriptionBody,
+      ...mockResponse,
+    }
+  });
+}
+
+export function numberParser(mockResponse = {}) {
+  mockApi({
+    method: 'POST',
+    url: `begin:${mockServer}/restapi/v1.0/number-parser/`,
+    body: {
+      ...numberParserBody,
+      ...mockResponse,
+    }
+  });
+}
+
+export function sms(mockResponse = {}) {
+  mockApi({
+    method: 'POST',
+    path: '/restapi/v1.0/account/~/extension/~/sms',
+    body: {
+      ...smsBody,
+      ...mockResponse,
+    }
+  });
+}
+
+export function restore() {
+  fetchMock.restore();
 }
 
 export function mockForLogin() {

@@ -267,6 +267,8 @@ gulp.task('release', ['release-copy'], async () => {
     packageInfo.version = version;
   }
   await fs.writeFile('release/package.json', JSON.stringify(packageInfo, null, 2));
+  gulp.src(['src/integration-test/mock/data/*.json'])
+    .pipe(gulp.dest('release/integration-test/mock/data'));
 });
 
 gulp.task('demo-extension-clean', async () => {

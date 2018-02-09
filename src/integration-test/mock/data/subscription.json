@@ -1,15 +1,21 @@
 {
-  "uri" : "https://platform.ringcentral.com/restapi/v1.0/subscription/5e1bbf5b-9862-4f70-b352-246b6ce1111",
-  "id" : "5e1bbf5b-9862-4f70-b352-246b6ce1111",
-  "creationTime" : "2017-06-05T03:03:13.330Z",
-  "status" : "Active",
-  "eventFilters" : [ "/restapi/v1.0/account/208594004/extension/208594004/message-store", "/restapi/v1.0/account/208594004/extension/208594004/presence?detailedTelephonyState=true&sipData=true", "/restapi/v1.0/account/208594004/extension/208594004/presence", "/restapi/v1.0/account/208594004/extension/208594004/presence?detailedTelephonyState=true" ],
-  "expirationTime" : "2017-06-05T03:18:13.330Z",
-  "expiresIn" : 899,
-  "deliveryMode" : {
-    "transportType" : "PubNub",
-    "encryption" : false,
-    "address" : "1798710565137916_ea27c149",
-    "subscriberKey" : "sub-c-b8b9cd8c-e906-11e2-b383-02ee2ddab7fe"
+  "uri": "https://platform.ringcentral.com/restapi/v1.0/subscription/09c41c8c-bed7-4f7f-b9d1-226fec163951",
+  "id": "09c41c8c-bed7-4f7f-b9d1-226fec163951",
+  "creationTime": "2019-02-08T08:43:03.630Z",
+  "status": "Active",
+  "eventFilters": [
+    "/restapi/v1.0/account/208594004/extension/208594004/presence?detailedTelephonyState=true",
+    "/restapi/v1.0/account/208594004/extension/208594004/message-store",
+    "/restapi/v1.0/account/208594004/extension/208594004/presence?detailedTelephonyState=true&sipData=true"
+  ],
+  "expirationTime": "2019-01-28T08:58:03.630Z",
+  "expiresIn": 899,
+  "deliveryMode": {
+    "transportType": "PubNub",
+    "encryption": true,
+    "address": "866603049130380_88168459",
+    "subscriberKey": "sub-c-b8b9cd8c-e906-11e2-b383-02ee2ddab7fe",
+    "encryptionAlgorithm": "AES",
+    "encryptionKey": "7mP+gPXHHWjP49kd5cN5cg=="
   }
 }
