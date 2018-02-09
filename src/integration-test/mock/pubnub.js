@@ -63,7 +63,9 @@ export function getLastPubnub() {
 
 function mockPubnub() {
   const id = require.resolve('pubnub');
-  require.cache[id].exports = MockedPubNub;
+  if (require.cache[id]) {
+    require.cache[id].exports = MockedPubNub;
+  }
 }
 
 mockPubnub();
