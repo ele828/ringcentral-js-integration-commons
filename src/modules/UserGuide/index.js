@@ -113,6 +113,7 @@ export default class UserGuide extends RcModule {
   @proxify
   async initUserGuide() {
     if (!this._rolesAndPermissions.hasUserGuidePermission) return;
+    // eslint-disable-next-line
     const prevGuides = this.guides;
     const guides = this.resolveGuides();
     // Determine if it needs to be displayed when first log in,
@@ -120,9 +121,9 @@ export default class UserGuide extends RcModule {
     // i.e. if any of the guide files is changed, the file name hash
     // will be changed as well, in this case, it will be displayed.
     await this.loadGuides(guides);
-    if (JSON.stringify(guides) !== JSON.stringify(prevGuides)) {
-      await this.start();
-    }
+    // if (JSON.stringify(guides) !== JSON.stringify(prevGuides)) {
+    //   await this.start();
+    // }
   }
 
   @proxify
