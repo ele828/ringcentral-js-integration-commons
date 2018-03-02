@@ -424,7 +424,7 @@ describe('MessageStore Unit Test', () => {
         subscribe: () => null,
       };
       messageStore._rolesAndPermissions = {
-        hasReadMessagesPermission: true,
+        hasReadMessagesPermission: true
       };
       await messageStore._initMessageStore();
       sinon.assert.calledOnce(messageStore._syncMessages);
@@ -457,36 +457,36 @@ describe('MessageStore Unit Test', () => {
 
     it(`should not call _syncMessages
         when subscription message is same as _lastSubscriptionMessage`, () => {
-      sinon.stub(messageStore, '_syncMessages');
-      messageStore._subscription = {
-        message: {
-          event: '/restapi/v1.0/account/~/extension/~/message-store',
-          body: {
-            changes: []
-          }
-        },
-      };
-      messageStore._lastSubscriptionMessage = messageStore._subscription.message;
-      messageStore._subscriptionHandler();
-      sinon.assert.notCalled(messageStore._syncMessages);
-    });
+        sinon.stub(messageStore, '_syncMessages');
+        messageStore._subscription = {
+          message: {
+            event: '/restapi/v1.0/account/~/extension/~/message-store',
+            body: {
+              changes: []
+            }
+          },
+        };
+        messageStore._lastSubscriptionMessage = messageStore._subscription.message;
+        messageStore._subscriptionHandler();
+        sinon.assert.notCalled(messageStore._syncMessages);
+      });
 
     it(`should call _syncMessages when subscription has message store event
         and _lastSubscriptionMessage is null`, () => {
-      sinon.stub(messageStore, '_syncMessages');
-      messageStore._subscription = {
-        message: {
-          event: '/restapi/v1.0/account/~/extension/~/message-store',
-          body: {
-            changes: []
-          }
-        },
-      };
-      messageStore._lastSubscriptionMessage = null;
-      messageStore._subscriptionHandler();
-      sinon.assert.calledOnce(messageStore._syncMessages);
-      expect(messageStore._lastSubscriptionMessage).to.equal(messageStore._subscription.message);
-    });
+        sinon.stub(messageStore, '_syncMessages');
+        messageStore._subscription = {
+          message: {
+            event: '/restapi/v1.0/account/~/extension/~/message-store',
+            body: {
+              changes: []
+            }
+          },
+        };
+        messageStore._lastSubscriptionMessage = null;
+        messageStore._subscriptionHandler();
+        sinon.assert.calledOnce(messageStore._syncMessages);
+        expect(messageStore._lastSubscriptionMessage).to.equal(messageStore._subscription.message);
+      });
 
     it('should not call _syncMessages when subscription message is not message event', () => {
       sinon.stub(messageStore, '_syncMessages');
@@ -505,33 +505,33 @@ describe('MessageStore Unit Test', () => {
 
     it(`should not call _syncMessages
         when subscription message is message event but empty body`, () => {
-      sinon.stub(messageStore, '_syncMessages');
-      messageStore._subscription = {
-        message: {
-          event: '/restapi/v1.0/account/~/extension/~/message-store',
-          body: null,
-        },
-      };
-      messageStore._lastSubscriptionMessage = null;
-      messageStore._subscriptionHandler();
-      sinon.assert.notCalled(messageStore._syncMessages);
-    });
+        sinon.stub(messageStore, '_syncMessages');
+        messageStore._subscription = {
+          message: {
+            event: '/restapi/v1.0/account/~/extension/~/message-store',
+            body: null,
+          },
+        };
+        messageStore._lastSubscriptionMessage = null;
+        messageStore._subscriptionHandler();
+        sinon.assert.notCalled(messageStore._syncMessages);
+      });
 
     it(`should not call _syncMessages
         when subscription message is message store event but empty changes`, () => {
-      sinon.stub(messageStore, '_syncMessages');
-      messageStore._subscription = {
-        message: {
-          event: '/restapi/v1.0/account/~/extension/~/message-store',
-          body: {
-            changes: null,
+        sinon.stub(messageStore, '_syncMessages');
+        messageStore._subscription = {
+          message: {
+            event: '/restapi/v1.0/account/~/extension/~/message-store',
+            body: {
+              changes: null,
+            },
           },
-        },
-      };
-      messageStore._lastSubscriptionMessage = null;
-      messageStore._subscriptionHandler();
-      sinon.assert.notCalled(messageStore._syncMessages);
-    });
+        };
+        messageStore._lastSubscriptionMessage = null;
+        messageStore._subscriptionHandler();
+        sinon.assert.notCalled(messageStore._syncMessages);
+      });
   });
 
   describe('_updateMessagesFromSync', () => {

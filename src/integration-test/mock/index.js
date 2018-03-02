@@ -1,5 +1,5 @@
 require('es6-promise').polyfill();
-require('./pubnub');
+// require('./pubnub');
 const RingCentral = require('ringcentral');
 const fetchMock = require('fetch-mock');
 
@@ -17,7 +17,7 @@ const phoneNumberBody = require('./data/phoneNumber');
 const presenceBody = require('./data/presence.json');
 const numberParserBody = require('./data/numberParser.json');
 const smsBody = require('./data/sms.json');
-const ringOutBody = require('./data/ringOut.json');
+const messageStoreBody = require('./data/messageStore.json');
 
 const mockServer = 'http://whatever';
 export function createSDK(options = {}) {
@@ -213,6 +213,17 @@ export function messageSync(mockResponse = {}) {
     url: `begin:${mockServer}/restapi/v1.0/account/~/extension/~/message-sync`,
     body: {
       ...messageSyncBody,
+      ...mockResponse,
+    }
+  });
+}
+
+export function updateMessageStatus(mockResponse = {}) {
+  mockApi({
+    url: `begin:${mockServer}/restapi/v1.0/account/~/extension/~/message-store`,
+    method: 'PUT',
+    body: {
+      ...messageStoreBody,
       ...mockResponse,
     }
   });

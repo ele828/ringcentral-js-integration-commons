@@ -139,16 +139,34 @@ export default class MessageStore extends Pollable {
     );
 
     this.addSelector(
+      'faxUnreadCounts',
+      () => this.allConversations,
+      (conversations) => {
+        let unreadCounts = 0;
+        conversations.forEach((conversation) => {
+          if (messageHelper.messageIsFax(conversation)) {
+            unreadCounts += conversation.unreadCounts;
+          }
+        });
+        return unreadCounts;
+      }
+    );
+
+    this.addSelector(
       'unreadCounts',
       () => this.voiceUnreadCounts,
       () => this.textUnreadCounts,
-      (voiceUnreadCounts, textUnreadCounts) => {
+      () => this.faxUnreadCounts,
+      (voiceUnreadCounts, textUnreadCounts, faxUnreadCounts) => {
         let unreadCounts = 0;
         if (this._rolesAndPermissions.readTextPermissions) {
           unreadCounts += textUnreadCounts;
         }
         if (this._rolesAndPermissions.voicemailPermissions) {
           unreadCounts += voiceUnreadCounts;
+        }
+        if (this._rolesAndPermissions.readFaxPermissions) {
+          unreadCounts += faxUnreadCounts;
         }
         return unreadCounts;
       },
@@ -589,7 +607,7 @@ export default class MessageStore extends Pollable {
 
   // for track mark message
   @proxify
-  async unmarkMessages() {
+  async onUnmarkMessages() {
     this.store.dispatch({
       type: this.actionTypes.markMessages,
     });
@@ -691,7 +709,7 @@ export default class MessageStore extends Pollable {
   }
 
   get conversations() {
-    return this._selectors.textAndVoicemailMessages();
+    return this.allConversations;
   }
 
   get conversationMap() {
@@ -726,6 +744,9 @@ export default class MessageStore extends Pollable {
     return this._selectors.voiceUnreadCounts();
   }
 
+  get faxUnreadCounts() {
+    return this._selectors.faxUnreadCounts();
+  }
   get messageStoreStatus() {
     return this.state.messageStoreStatus;
   }

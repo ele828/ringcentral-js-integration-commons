@@ -26,10 +26,10 @@ export function messageIsVoicemail(message) {
 }
 
 export function messageIsAcceptable(message) {
-  // do not show outbound faxes
+  // do not show submitted faxes or sending failed faxes now
   // do not show deleted messages
-  return (message.type !== messageTypes.fax || message.direction === 'Inbound') &&
-    (!messageIsDeleted(message));
+  return (message.type !== messageTypes.fax || (message.messageStatus !== 'Queued' && message.messageStatus !== 'SendingFailed')) &&
+  (!messageIsDeleted(message));
 }
 
 export function getMyNumberFromMessage({ message, myExtensionNumber }) {
@@ -160,3 +160,14 @@ export function getVoicemailAttachment(message, accessToken) {
     uri,
   };
 }
+export function getFaxAttachment(message, accessToken) {
+  const attachment = message.attachments && message.attachments[0];
+  if (!attachment) {
+    return {};
+  }
+  const uri = `${attachment.uri}?access_token=${decodeURIComponent(accessToken)}`;
+  return {
+    uri
+  };
+}
+
