@@ -10,6 +10,8 @@ import {
   messageIsTextMessage,
   messageIsVoicemail,
   getVoicemailAttachment,
+  getFaxAttachment,
+  messageIsFax,
 } from '../../lib/messageHelper';
 import cleanNumber from '../../lib/cleanNumber';
 import proxify from '../../lib/proxy/proxify';
@@ -138,6 +140,10 @@ export default class Messages extends RcModule {
           if (messageIsVoicemail(message)) {
             voicemailAttachment = getVoicemailAttachment(message, accessToken);
           }
+          let faxAttachment = null;
+          if (messageIsFax(message)) {
+            faxAttachment = getFaxAttachment(message, accessToken);
+          }
           return {
             ...message,
             self,
@@ -148,6 +154,7 @@ export default class Messages extends RcModule {
             isLogging,
             conversationMatches,
             voicemailAttachment,
+            faxAttachment,
             lastMatchedCorrespondentEntity: (
               this._conversationLogger &&
                 this._conversationLogger.getLastMatchedCorrespondentEntity(message)
@@ -174,6 +181,11 @@ export default class Messages extends RcModule {
                   this._rolesAndPermissions.voicemailPermissions ||
                   !messageIsVoicemail(conversation)
                 )
+                &&
+                (
+                  this._rolesAndPermissions.readFaxPermissions ||
+                  !messageIsFax(conversation)
+                )
               )
             );
           }
@@ -184,6 +196,10 @@ export default class Messages extends RcModule {
           case messageTypes.voiceMail:
             return allConversations.filter(
               conversation => messageIsVoicemail(conversation)
+            );
+          case messageTypes.fax:
+            return allConversations.filter(
+              conversation => messageIsFax(conversation)
             );
           default:
             return allConversations;

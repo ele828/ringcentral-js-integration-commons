@@ -157,7 +157,8 @@ export default class RolesAndPermissions extends DataFetcher {
   get hasReadMessagesPermission() {
     return this.ready && (
       this.readTextPermissions ||
-      this.voicemailPermissions
+      this.voicemailPermissions ||
+      this.readFaxPermissions
     );
   }
 

@@ -118,10 +118,10 @@ describe('messageIsAcceptable', () => {
     expect(result).to.equal(true);
   });
 
-  it('should return false when message type is Fax and Alive', () => {
+  it('should return true when message type is Fax and Alive', () => {
     const message = { type: 'Fax', availability: 'Alive' };
     const result = messageHelper.messageIsAcceptable(message);
-    expect(result).to.equal(false);
+    expect(result).to.equal(true);
   });
 
   it('should return true when message type is VoiceMail and Alive', () => {
@@ -154,12 +154,16 @@ describe('messageIsAcceptable', () => {
     expect(result).to.equal(true);
   });
 
-  it('should return false when message type is Fax and Outbound', () => {
-    const message = { type: 'Fax', availability: 'Alive', direction: 'Outbound' };
+  it('should return false when message type is Fax and Queued', () => {
+    const message = { type: 'Fax', direction: 'Outbound', messageStatus: 'Queued' };
     const result = messageHelper.messageIsAcceptable(message);
     expect(result).to.equal(false);
   });
-
+  it('should return false when message type is Fax and sending failed', () => {
+    const message = { type: 'Fax', direction: 'Outbound', messageStatus: 'SendingFailed' };
+    const result = messageHelper.messageIsAcceptable(message);
+    expect(result).to.equal(false);
+  });
   it('should return false when message type is VoiceMail and Deleted', () => {
     const message = { type: 'VoiceMail', availability: 'Deleted' };
     const result = messageHelper.messageIsAcceptable(message);
