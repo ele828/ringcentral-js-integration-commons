@@ -121,9 +121,9 @@ export default class UserGuide extends RcModule {
     // i.e. if any of the guide files is changed, the file name hash
     // will be changed as well, in this case, it will be displayed.
     await this.loadGuides(guides);
-    // if (JSON.stringify(guides) !== JSON.stringify(prevGuides)) {
-    //   await this.start();
-    // }
+    if (JSON.stringify(guides) !== JSON.stringify(prevGuides)) {
+      await this.start();
+    }
   }
 
   @proxify
