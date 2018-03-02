@@ -17,6 +17,7 @@ const phoneNumberBody = require('./data/phoneNumber');
 const presenceBody = require('./data/presence.json');
 const numberParserBody = require('./data/numberParser.json');
 const smsBody = require('./data/sms.json');
+const ringOutBody = require('./data/ringOut.json');
 const messageStoreBody = require('./data/messageStore.json');
 
 const mockServer = 'http://whatever';
