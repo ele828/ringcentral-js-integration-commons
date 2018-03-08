@@ -1,4 +1,4 @@
-//test
+// test
 import RcModule from '../../lib/RcModule';
 import { Module } from '../../lib/di';
 import isBlank from '../../lib/isBlank';
@@ -6,6 +6,7 @@ import ensureExist from '../../lib/ensureExist';
 import { addPhoneToContact, getMatchContacts } from '../../lib/contactHelper';
 import { batchGetApi } from '../../lib/batchApiHelper';
 import proxify from '../../lib/proxy/proxify';
+// test
 
 import actionTypes from './actionTypes';
 import getReducer from './getReducer';
