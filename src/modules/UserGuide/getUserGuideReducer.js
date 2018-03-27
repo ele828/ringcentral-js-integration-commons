@@ -2,7 +2,7 @@ import { combineReducers } from 'redux';
 import getModuleStatusReducer from '../../lib/getModuleStatusReducer';
 
 export function getGuidesReducer(types) {
-  return (state = [], { type, guides }) => {
+  return (state = {}, { type, guides }) => {
     if (type === types.loadGuides) {
       return guides;
     }

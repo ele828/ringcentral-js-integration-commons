@@ -38,5 +38,6 @@ export default new HashMap({
   unknown: 'Unknown',
   voicemail: 'Voicemail',
   wrongNumber: 'Wrong Number',
+  faxReceipt: 'Fax Receipt',
 });
 

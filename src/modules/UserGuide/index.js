@@ -4,9 +4,18 @@ import { Module } from '../../lib/di';
 import actionTypes from './actionTypes';
 import getUserGuideReducer, { getGuidesReducer } from './getUserGuideReducer';
 
+/**
+ * Support localization
+ */
+const SUPPORTED_LOCALES = {
+  'en-US': 'en-US',
+  'fr-CA': 'fr-CA',
+};
+
 @Module({
   deps: [
     'Auth',
+    'Locale',
     'Storage',
     'Webphone',
     'RolesAndPermissions',
@@ -16,6 +25,7 @@ import getUserGuideReducer, { getGuidesReducer } from './getUserGuideReducer';
 export default class UserGuide extends RcModule {
   constructor({
     auth,
+    locale,
     storage,
     webphone,
     rolesAndPermissions,
@@ -26,6 +36,7 @@ export default class UserGuide extends RcModule {
       ...options
     });
     this._auth = auth;
+    this._locale = locale;
     this._storage = storage;
     this._webphone = webphone;
     this._rolesAndPermissions = rolesAndPermissions;
@@ -49,6 +60,7 @@ export default class UserGuide extends RcModule {
     if (
       this.pending &&
       this._auth.ready &&
+      this._locale.ready &&
       this._storage.ready &&
       this._rolesAndPermissions.ready &&
       this._auth.loggedIn
@@ -60,9 +72,11 @@ export default class UserGuide extends RcModule {
     } else if (
       this.ready && (
         !this._auth.ready ||
+        !this._locale.ready ||
         !this._storage.ready ||
         !this._rolesAndPermissions.ready
-      )) {
+      )
+    ) {
       this.store.dispatch({
         type: this.actionTypes.resetSuccess
       });
@@ -75,19 +89,36 @@ export default class UserGuide extends RcModule {
       this._webphone.ringSession !== this._lastRingSession
     ) {
       this._lastRingSession = this._webphone.ringSession;
-      this.updateCarousel({ curIdx: 0, entered: false, playing: false });
+      this.dismiss();
     }
   }
 
   /**
    * Using webpack `require.context` to load guides files.
    * Image files will be ordered by file name ascendingly.
+   * @return {Map<String, Array<URI>>}
    */
   resolveGuides() {
     if (this._context && typeof this._context === 'function') {
-      return this._context.keys().sort().map(key => this._context(key));
+      const locales = Object.keys(SUPPORTED_LOCALES);
+      return this._context.keys().sort()
+        .map(key => this._context(key))
+        .reduce((prev, curr) => {
+          locales.forEach((locale) => {
+            if (!prev[locale]) prev[locale] = [];
+            if (curr.includes(locale)) {
+              prev[locale].push(curr);
+            }
+          });
+          return prev;
+        }, {});
     }
-    return [];
+    return {};
+  }
+
+  @proxify
+  dismiss() {
+    this.updateCarousel({ curIdx: 0, entered: false, playing: false });
   }
 
   @proxify
@@ -114,7 +145,7 @@ export default class UserGuide extends RcModule {
   async initUserGuide() {
     if (!this._rolesAndPermissions.hasUserGuidePermission) return;
     // eslint-disable-next-line
-    const prevGuides = this.guides;
+    const prevGuides = this.allGuides;
     const guides = this.resolveGuides();
     // Determine if it needs to be displayed when first log in,
     // the principles behind this is to use webpack's file hash,
@@ -140,10 +171,17 @@ export default class UserGuide extends RcModule {
   }
 
   get guides() {
-    if (!this._storage.ready) return [];
-    const guides = this._storage.getItem(this._storageKey);
-    if (guides && Array.isArray(guides)) return guides;
+    if (!this._locale.ready) return [];
+    if (this.allGuides) {
+      return this.allGuides[this._locale.currentLocale] ||
+        this.allGuides[SUPPORTED_LOCALES['en-US']] || [];
+    }
     return [];
+  }
+
+  get allGuides() {
+    if (!this._storage.ready) return [];
+    return this._storage.getItem(this._storageKey);
   }
 
   get carouselState() {
