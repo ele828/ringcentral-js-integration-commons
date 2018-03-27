@@ -14,14 +14,18 @@ import audioSettingsErrors from './audioSettingsErrors';
  */
 @Module({
   deps: [
+    'Auth',
     'Alert',
     'Storage',
+    'RolesAndPermissions',
   ],
 })
 export default class AudioSettings extends RcModule {
   constructor({
-    storage,
+    auth,
     alert,
+    storage,
+    rolesAndPermissions,
     ...options
   }) {
     super({
@@ -29,7 +33,9 @@ export default class AudioSettings extends RcModule {
       actionTypes,
     });
     this._storage = this::ensureExist(storage, 'storage');
+    this._auth = this::ensureExist(auth, 'auth');
     this._alert = this::ensureExist(alert, 'alert');
+    this._rolesAndPermissions = this::ensureExist(rolesAndPermissions, 'rolesAndPermissions');
     this._storageKey = 'audioSettings';
     this._storage.registerReducer({
       key: this._storageKey,
@@ -47,6 +53,33 @@ export default class AudioSettings extends RcModule {
     );
   }
 
+  initializeProxy() {
+    // Check audio permissions everytime app client starts
+    if (this.supportDevices) {
+      this._checkDevices();
+    }
+    this.store.subscribe(() => {
+      if (
+        this.ready &&
+        this._auth.loggedIn &&
+        this._rolesAndPermissions.webphoneEnabled &&
+        !this.userMedia
+      ) {
+        // Make sure it only prompts once
+        if (this.hasAutoPrompted) return;
+        this.getUserMedia();
+        this.markAutoPrompted();
+      }
+    });
+  }
+
+  @proxify
+  async markAutoPrompted() {
+    this.store.dispatch({
+      type: this.actionTypes.autoPrompted
+    });
+  }
+
   initialize() {
     this.store.subscribe(() => this._onStateChange());
     if (
@@ -60,21 +93,22 @@ export default class AudioSettings extends RcModule {
     }
   }
 
-  initializeProxy() {
-    // TODO: remove following user media check
-    this.getUserMedia();
-  }
-
   _shouldInit() {
     return !!(
       this.pending &&
-      this._storage.ready
+      this._storage.ready &&
+      this._auth.ready &&
+      this._rolesAndPermissions.ready
     );
   }
   _shouldReset() {
     return !!(
       this.ready &&
-      !this._storage.ready
+      (
+        !this._auth.ready ||
+        !this._storage.ready ||
+        !this._rolesAndPermissions.ready
+      )
     );
   }
   async _onStateChange() {
@@ -98,6 +132,7 @@ export default class AudioSettings extends RcModule {
     }
   }
 
+  @proxify
   async _checkDevices() {
     const devices = await navigator.mediaDevices.enumerateDevices();
     this.store.dispatch({
@@ -125,7 +160,7 @@ export default class AudioSettings extends RcModule {
           }
           resolve();
         }, (error) => {
-          this._onGetUserMediaError(error);
+          this.onGetUserMediaError(error);
           resolve();
         });
       }
@@ -148,14 +183,13 @@ export default class AudioSettings extends RcModule {
   }
 
   @proxify
-  async _onGetUserMediaError(error) {
+  async onGetUserMediaError(error) {
     this.store.dispatch({
       type: this.actionTypes.getUserMediaError,
       error,
     });
     this._alert.danger({
       message: audioSettingsErrors.userMediaPermission,
-      ttl: 0,
       allowDuplicates: false,
     });
   }
@@ -165,7 +199,6 @@ export default class AudioSettings extends RcModule {
     if (!this.userMedia) {
       this._alert.danger({
         message: audioSettingsErrors.userMediaPermission,
-        ttl: 0,
         allowDuplicates: false,
       });
     }
@@ -255,6 +288,10 @@ export default class AudioSettings extends RcModule {
       this.availableDevices.length &&
       this.availableDevices[0].label !== ''
     );
+  }
+
+  get hasAutoPrompted() {
+    return this.cacheData.hasAutoPrompted;
   }
 
   get status() {

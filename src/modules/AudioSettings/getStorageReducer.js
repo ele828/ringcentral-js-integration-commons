@@ -85,6 +85,16 @@ function getCallVolumeReducer(types) {
   };
 }
 
+export function getHasAutoPromptedReducer(types) {
+  return (state = false, { type }) => {
+    switch (type) {
+      case types.autoPrompted:
+        return true;
+      default:
+        return state;
+    }
+  };
+}
 
 export default function getStorageReducer(types) {
   return combineReducers({
@@ -95,5 +105,6 @@ export default function getStorageReducer(types) {
     callVolume: getCallVolumeReducer(types),
     outputDeviceId: getOutputDeviceIdReducer(types),
     inputDeviceId: getInputDeviceIdReducer(types),
+    hasAutoPrompted: getHasAutoPromptedReducer(types),
   });
 }

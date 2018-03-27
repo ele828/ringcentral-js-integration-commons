@@ -14,7 +14,7 @@ import getNumberValidateReducer from './getNumberValidateReducer';
  * @description Validate number with number parser api
  */
 @Module({
-  deps: ['Client', 'AccountExtension', 'RegionSettings', 'AccountInfo']
+  deps: ['Brand', 'Client', 'AccountExtension', 'RegionSettings', 'AccountInfo']
 })
 export default class NumberValidate extends RcModule {
   /**
@@ -26,6 +26,7 @@ export default class NumberValidate extends RcModule {
    * @param {AccountInfo} params.accountInfo - accountInfo module instance
    */
   constructor({
+    brand,
     client,
     accountExtension,
     regionSettings,
@@ -36,6 +37,7 @@ export default class NumberValidate extends RcModule {
       ...options,
       actionTypes: numberValidateActionTypes,
     });
+    this._brand = brand;
     this._client = client;
     this._accountExtension = accountExtension;
     this._regionSettings = regionSettings;
@@ -57,6 +59,7 @@ export default class NumberValidate extends RcModule {
 
   _shouldInit() {
     return (
+      this._brand.ready &&
       this._regionSettings.ready &&
       this._accountExtension.ready &&
       this._accountInfo.ready &&
@@ -73,6 +76,7 @@ export default class NumberValidate extends RcModule {
   _shouldReset() {
     return (
       (
+        !this._brand.ready ||
         !this._accountInfo.ready ||
         !this._regionSettings.ready ||
         !this._accountExtension.ready
@@ -112,6 +116,7 @@ export default class NumberValidate extends RcModule {
       areaCode,
     } = this._regionSettings;
     if (
+      this._brand.id === '1210' &&
       !isServiceNumber &&
       !hasPlus &&
       number.length === 7 &&

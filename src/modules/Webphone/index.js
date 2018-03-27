@@ -7,6 +7,7 @@ import RcModule from '../../lib/RcModule';
 import sleep from '../../lib/sleep';
 import moduleStatuses from '../../enums/moduleStatuses';
 import connectionStatus from './connectionStatus';
+
 import sessionStatus from './sessionStatus';
 import recordStatus from './recordStatus';
 import actionTypes from './actionTypes';
@@ -360,6 +361,9 @@ export default class Webphone extends RcModule {
       });
     };
     const onRegistrationFailed = (response, cause) => {
+      if (this.connectionStatus === connectionStatus.connectFailed) {
+        return;
+      }
       this._isFirstRegister = true;
       let errorCode;
       let needToReconnect = false;
@@ -379,19 +383,52 @@ export default class Webphone extends RcModule {
       *   (But the WebRTC client must logout on receiving SIP/2.0 403 Forbidden error and in case of login -
       *   provision again via Platform API and receive new InstanceID)
       */
-      if (response && (response.status_code === 503 || response.status_code === 603)) {
-        errorCode = webphoneErrors.webphoneCountOverLimit;
-        this._alert.warning({
-          message: errorCode,
-        });
-        needToReconnect = true;
+      const statusCode = response ? response.status_code : null;
+      switch (statusCode) {
+        // Webphone account overlimit
+        case 503: case 603: {
+          errorCode = webphoneErrors.webphoneCountOverLimit;
+          needToReconnect = true;
+          break;
+        }
+        case 403: {
+          errorCode = webphoneErrors.webphoneForbidden;
+          needToReconnect = true;
+          break;
+        }
+        // Request Timeout
+        case 408: {
+          errorCode = webphoneErrors.requestTimeout;
+          needToReconnect = true;
+          break;
+        }
+        // Internal server error
+        case 500: {
+          errorCode = webphoneErrors.internalServerError;
+          break;
+        }
+        // Timeout
+        case 504: {
+          errorCode = webphoneErrors.serverTimeout;
+          needToReconnect = true;
+          break;
+        }
+        default: {
+          errorCode = webphoneErrors.unknownError;
+          break;
+        }
       }
-      if (response && response.status_code === 403) {
-        needToReconnect = true;
-      }
+      this._alert.danger({
+        message: errorCode,
+        allowDuplicates: false,
+        payload: {
+          statusCode
+        }
+      });
       this.store.dispatch({
         type: this.actionTypes.registrationFailed,
         errorCode,
+        statusCode,
       });
       if (cause === 'Request Timeout') {
         needToReconnect = true;
@@ -406,7 +443,7 @@ export default class Webphone extends RcModule {
     );
     this._webphone.userAgent.on('registered', onRegistered);
     this._webphone.userAgent.on('unregistered', onUnregistered);
-    this._webphone.userAgent.once('registrationFailed', onRegistrationFailed);
+    this._webphone.userAgent.on('registrationFailed', onRegistrationFailed);
     this._webphone.userAgent.on('invite', (session) => {
       console.debug('UA invite');
       this._onInvite(session);
@@ -459,7 +496,7 @@ export default class Webphone extends RcModule {
       this._createWebphone(sipProvision);
     } catch (error) {
       console.error(error);
-      this._alert.warning({
+      this._alert.danger({
         message: webphoneErrors.connectFailed,
         ttl: 0,
         allowDuplicates: false,
@@ -473,7 +510,8 @@ export default class Webphone extends RcModule {
         this._rolesAndPermissions.refreshServiceFeatures();
         needToReconnect = false;
         errorCode = webphoneErrors.notWebphonePermission;
-        return;
+      } else {
+        errorCode = webphoneErrors.sipProvisionError;
       }
       this.store.dispatch({
         type: this.actionTypes.connectError,
@@ -494,7 +532,10 @@ export default class Webphone extends RcModule {
     if (
       this._auth.loggedIn &&
       this.enabled &&
-      this.connectionStatus === connectionStatus.disconnected
+      (
+        this.connectionStatus === connectionStatus.disconnected ||
+        this.connectionStatus === connectionStatus.connectFailed
+      )
     ) {
       if (!isBrowerSupport()) {
         this.store.dispatch({
@@ -624,6 +665,9 @@ export default class Webphone extends RcModule {
       session.callStatus = sessionStatus.connected;
       this._updateSessions();
     });
+    session.mediaHandler.on('userMediaFailed', () => {
+      this._audioSettings.onGetUserMediaError();
+    });
   }
 
   _onInvite(session) {
@@ -658,7 +702,8 @@ export default class Webphone extends RcModule {
     } catch (e) {
       console.log('Accept failed');
       console.error(e);
-      this._removeSession(session);
+      // this._removeSession(session);
+      this._onCallEnd(session);
     }
   }
 
@@ -672,7 +717,8 @@ export default class Webphone extends RcModule {
       await session.reject();
     } catch (e) {
       console.error(e);
-      this._removeSession(session);
+      // this._removeSession(session);
+      this._onCallEnd(session);
     }
   }
 
@@ -1153,6 +1199,22 @@ export default class Webphone extends RcModule {
     }
   }
 
+  /**
+   * Inform user what is happening with webphone,
+   * this will be invoked when webphone itself run into error situation
+   */
+  @proxify
+  async showAlert() {
+    if (!this.errorCode) return;
+    this._alert.danger({
+      message: this.errorCode,
+      allowDuplicates: false,
+      payload: {
+        statusCode: this.statusCode
+      },
+    });
+  }
+
   get status() {
     return this.state.status;
   }
@@ -1243,6 +1305,10 @@ export default class Webphone extends RcModule {
 
   get errorCode() {
     return this.state.errorCode;
+  }
+
+  get statusCode() {
+    return this.state.statusCode;
   }
 
   get disconnecting() {

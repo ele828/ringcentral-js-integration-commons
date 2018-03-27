@@ -7,6 +7,7 @@ import getWebphoneReducer, {
   getRingSessionIdReducer,
   getSessionsReducer,
   getErrorCodeReducer,
+  getStatusCodeReducer,
   getLastEndedSessionsReducer,
 } from './getWebphoneReducer';
 
@@ -32,7 +33,7 @@ describe('Webphone :: getVideoElementPreparedReducer', () => {
     it('should return original state when actionTypes is not recognized', () => {
       const originalState = {};
       expect(reducer(originalState, { type: 'foo' }))
-      .to.equal(originalState);
+        .to.equal(originalState);
     });
     it('should return true when action.type is videoElementPrepared', () => {
       expect(reducer({}, { type: actionTypes.videoElementPrepared })).to.equal(true);
@@ -479,6 +480,7 @@ describe('getWebphoneReducer', () => {
     const ringSessionIdReducer = getRingSessionIdReducer(actionTypes);
     const sessionsReducer = getSessionsReducer(actionTypes);
     const errorCodeReducer = getErrorCodeReducer(actionTypes);
+    const statusCodeReducer = getStatusCodeReducer(actionTypes);
     const lastEndedSessionsReducer = getLastEndedSessionsReducer(actionTypes);
     expect(reducer(undefined, {})).to.deep.equal({
       status: statusReducer(undefined, {}),
@@ -490,6 +492,7 @@ describe('getWebphoneReducer', () => {
       sessions: sessionsReducer(undefined, {}),
       lastEndedSessions: lastEndedSessionsReducer(undefined, {}),
       errorCode: errorCodeReducer(undefined, {}),
+      statusCode: statusCodeReducer(undefined, {}),
     });
   });
 });

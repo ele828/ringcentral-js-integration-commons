@@ -147,7 +147,20 @@ export default class CallLog extends Pollable {
           // [RCINT-3472] calls with result === 'stopped' seems to be useless
           call.result !== callResults.stopped &&
           // [RCINT-51111] calls with result === 'busy'
-          call.result !== callResults.busy
+          call.result !== callResults.busy &&
+          // [RCINT-6839]
+          // Call processing result is undefined
+          call.result !== callResults.unknown &&
+          // Outgoing fax sending has failed
+          call.result !== callResults.faxSendError &&
+          // Incoming fax has failed to be received
+          call.result !== callResults.faxReceiptError &&
+          // Outgoing fax has failed because of no answer
+          call.result !== callResults.callFailed &&
+          // Outgoing fax sending has been stopped
+          call.result !== callResults.stopped &&
+          // Error Internal error occurred when receiving fax
+          call.result !== callResults.faxReceipt
         ))))
       ),
     );
