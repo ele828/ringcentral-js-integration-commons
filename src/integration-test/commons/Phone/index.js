@@ -337,6 +337,7 @@ export default class Phone extends RcModule {
     }));
     this.addModule('numberValidate', new NumberValidate({
       ...options,
+      brand: this.brand,
       client: this.client,
       accountExtension: this.accountExtension,
       regionSettings: this.regionSettings,
