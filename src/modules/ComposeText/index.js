@@ -62,6 +62,7 @@ export default class ComposeText extends RcModule {
     this._numberValidate = numberValidate;
     this._contactSearch = contactSearch;
     this._lastContactSearchResult = [];
+    this.senderNumbersList = [];
     storage.registerReducer({ key: this._storageKey, reducer: this._cacheReducer });
   }
 

@@ -1,13 +1,13 @@
 import { createStore } from 'redux';
 import Phone from './Phone';
 import apiConfig from './config/apiConfig';
-import brandConfig from './config/brandConfig';
+import getBrandConfig from './config/brandConfig';
 import uuid from 'uuid';
 
 export default function getTestPhone() {
   const testPhone = new Phone({
     ...apiConfig,
-    ...brandConfig,
+    ...getBrandConfig(),
     prefix: uuid.v4()
   });
   const store = createStore(testPhone.reducer);
