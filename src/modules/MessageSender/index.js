@@ -11,6 +11,7 @@ import messageSenderStatus from './messageSenderStatus';
 import messageSenderMessages from './messageSenderMessages';
 import proxify from '../../lib/proxy/proxify';
 import chunkMessage from '../../lib/chunkMessage';
+import sleep from '../../lib/sleep';
 
 export const MessageMaxLength = 1000;
 export const MultipartMessageMaxLength = MessageMaxLength * 5;
@@ -230,7 +231,6 @@ export default class MessageSender extends RcModule {
 
       const responses = [];
       const chunks = multipart ? chunkMessage(text, MessageMaxLength) : [text];
-
       if (extensionNumbers.length > 0) {
         for (const chunk of chunks) {
           const pagerResponse = await this._sendPager({
@@ -274,6 +274,7 @@ export default class MessageSender extends RcModule {
   @proxify
   async _sendSms({ fromNumber, toNumber, text }) {
     const toUsers = [{ phoneNumber: toNumber }];
+    await sleep(2000);
     const response = await this._client.account().extension().sms().post({
       from: { phoneNumber: fromNumber },
       to: toUsers,
@@ -290,6 +291,7 @@ export default class MessageSender extends RcModule {
     if (replyOnMessageId) {
       params.replyOn = replyOnMessageId;
     }
+    await sleep(2000);
     const response = await this._client.account().extension().companyPager().post(params);
     return response;
   }
