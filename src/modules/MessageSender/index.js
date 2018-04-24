@@ -16,6 +16,8 @@ import sleep from '../../lib/sleep';
 export const MessageMaxLength = 1000;
 export const MultipartMessageMaxLength = MessageMaxLength * 5;
 
+const SENDING_THRESHOLD = 30;
+
 /**
  * @class
  * @description Message sender and validator module
@@ -231,8 +233,11 @@ export default class MessageSender extends RcModule {
 
       const responses = [];
       const chunks = multipart ? chunkMessage(text, MessageMaxLength) : [text];
+      const total = (phoneNumbers.length + 1) * chunks.length;
+      const shouldSleep = total > SENDING_THRESHOLD;
       if (extensionNumbers.length > 0) {
         for (const chunk of chunks) {
+          if (shouldSleep) await sleep(2000);
           const pagerResponse = await this._sendPager({
             toNumbers: extensionNumbers,
             text: chunk,
@@ -245,6 +250,7 @@ export default class MessageSender extends RcModule {
       if (phoneNumbers.length > 0) {
         for (const phoneNumber of phoneNumbers) {
           for (const chunk of chunks) {
+            if (shouldSleep) await sleep(2000);
             const smsResponse = await this._sendSms({
               fromNumber,
               toNumber: phoneNumber,
@@ -274,7 +280,6 @@ export default class MessageSender extends RcModule {
   @proxify
   async _sendSms({ fromNumber, toNumber, text }) {
     const toUsers = [{ phoneNumber: toNumber }];
-    await sleep(2000);
     const response = await this._client.account().extension().sms().post({
       from: { phoneNumber: fromNumber },
       to: toUsers,
@@ -291,7 +296,6 @@ export default class MessageSender extends RcModule {
     if (replyOnMessageId) {
       params.replyOn = replyOnMessageId;
     }
-    await sleep(2000);
     const response = await this._client.account().extension().companyPager().post(params);
     return response;
   }
